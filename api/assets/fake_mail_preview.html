@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Aperçu exemple — SignDex</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #eceff3;
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+    #signdex-fake-mail-root {
+      padding: 28px 24px 36px;
+    }
+    .chrome-hint {
+      font-size: 11px;
+      color: #5f6368;
+      text-align: center;
+      margin-bottom: 18px;
+      letter-spacing: 0.02em;
+    }
+    .mail-shell {
+      max-width: 708px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(60,64,67,.18), 0 4px 24px rgba(60,64,67,.12);
+      overflow: hidden;
+      border: 1px solid #dadce0;
+    }
+    .mail-toolbar {
+      height: 8px;
+      background: linear-gradient(90deg, #ea4335 0%, #fbbc04 25%, #34a853 50%, #4285f4 75%);
+      opacity: 0.85;
+    }
+    .mail-inner {
+      padding: 22px 26px 28px;
+    }
+    .meta-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 6px;
+    }
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #e8eef6, #d4dde8);
+      color: #3c4043;
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      letter-spacing: -0.02em;
+    }
+    .meta-text {
+      flex: 1;
+      min-width: 0;
+    }
+    .sender-line {
+      font-size: 14px;
+      font-weight: 600;
+      color: #202124;
+      line-height: 1.35;
+    }
+    .sender-line span.light {
+      font-weight: 400;
+      color: #5f6368;
+    }
+    .to-line {
+      font-size: 12px;
+      color: #5f6368;
+      margin-top: 3px;
+    }
+    .subject {
+      font-size: 18px;
+      font-weight: 500;
+      color: #202124;
+      margin: 18px 0 16px;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+    }
+    hr.sep {
+      border: none;
+      border-top: 1px solid #e8eaed;
+      margin: 0 0 18px;
+    }
+    .body-copy {
+      font-size: 14px;
+      line-height: 1.65;
+      color: #3c4043;
+      margin: 0 0 14px;
+      max-width: 56em;
+    }
+    .body-copy:last-of-type {
+      margin-bottom: 22px;
+    }
+    .sig-wrap {
+      margin-top: 8px;
+      padding-top: 6px;
+      border-top: 1px dashed #e8eaed;
+    }
+    .sig-wrap > * {
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="signdex-fake-mail-root">
+    <p class="chrome-hint">Aperçu illustratif (approximation visuelle d’un lecteur de mail)</p>
+    <div class="mail-shell">
+      <div class="mail-toolbar" aria-hidden="true"></div>
+      <div class="mail-inner">
+        <div class="meta-row">
+          <div class="avatar" aria-hidden="true">%%SENDER_INITIALS%%</div>
+          <div class="meta-text">
+            <div class="sender-line">%%SENDER_NAME%% <span class="light">&lt;%%SENDER_EMAIL%%&gt;</span></div>
+            <div class="to-line">À : moi · %%DATE_HINT%%</div>
+          </div>
+        </div>
+        <h2 class="subject">%%SUBJECT_LINE%%</h2>
+        <hr class="sep">
+        <p class="body-copy">
+          Bonjour,<br><br>
+          Voici une mise à jour rapide sur le dossier. Merci de prendre connaissance des pièces jointes
+          lorsque vous aurez un moment ; je reste disponible pour en parler de vive voix si besoin.
+        </p>
+        <p class="body-copy">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut
+          labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
+        </p>
+        <p class="body-copy">Cordialement,</p>
+        <div class="sig-wrap">
+%%SIGNATURE_INNER_HTML%%
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

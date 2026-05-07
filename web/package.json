@@ -1,0 +1,37 @@
+{
+  "name": "SignDex",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "preview": "nuxt preview",
+    "generate": "nuxt generate",
+    "desktop:generate": "cross-env NUXT_DESKTOP_BUILD=1 nuxt generate",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@iconify-json/lucide": "^1.2.101",
+    "@nuxt/ui": "^4.6.1",
+    "@tauri-apps/api": "2.11.0",
+    "@tauri-apps/plugin-dialog": "2.7.0",
+    "@tauri-apps/plugin-fs": "2.5.0",
+    "@tauri-apps/plugin-shell": "2.3.5",
+    "jszip": "^3.10.1",
+    "nuxt": "4.4.2",
+    "tailwindcss": "^4.2.2",
+    "vue": "^3.5.32",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.11.0",
+    "@types/node": "^25.5.2",
+    "cross-env": "^10.1.0",
+    "typescript": "^6.0.2",
+    "vue-tsc": "^3.2.7"
+  }
+}
+

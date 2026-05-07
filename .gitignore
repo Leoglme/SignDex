@@ -1,0 +1,73 @@
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editors / IDE (garde les règles projet si tu les versionnes : retire les lignes concernées)
+.idea/
+*.swp
+*.swo
+*~
+
+# --- Secrets & env local (ne jamais committer)
+**/.env
+**/.env.local
+**/.env.*.local
+!**/.env.example
+
+# --- Python / API
+api/.venv/
+api/venv/
+api/__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+.eggs/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.cover
+.hypothesis/
+
+# --- Node / Nuxt / Nitro
+web/node_modules/
+web/.nuxt/
+web/.output/
+web/.data/
+web/dist/
+web/.nitro/
+web/.cache/
+**/.vite/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Tauri / Rust
+web/src-tauri/target/
+**/*.rs.bk
+
+# Si tu génères des icônes ou assets locaux non versionnés :
+# web/src-tauri/icons/generated/
+
+# --- Outils / diagnostics
+playwright-report/
+test-results/
+playwright/.cache/
+
+# Décommente si tu ne veux jamais versionner de ZIP dans le dépôt :
+# *.zip
+
+# --- Divers
+.turbo
+.vercel
+.netlify

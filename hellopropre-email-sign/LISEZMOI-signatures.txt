@@ -1,0 +1,91 @@
+================================================================================
+  SIGNATURES E-MAIL HELLOPROPRE — MODE D’EMPLOI
+================================================================================
+
+Ce dossier contient trois versions différentes de signature pour Gmail. Vous
+pouvez choisir celle que vous préférez visuellement.
+
+
+--------------------------------------------------------------------------------
+  CE QUE CONTIENNENT LES DOSSIERS
+--------------------------------------------------------------------------------
+
+  • EXEMPLES
+    Des captures d’écran prises dans Gmail pour montrer le rendu réel de
+    chaque version (v1, v2, v3). Utile pour comparer avant de choisir.
+
+  • HTML
+    Les fichiers de signature au format HTML : ce sont ceux à utiliser si vous
+    souhaitez des liens cliquables (site web, e-mail, téléphone, réseaux sociaux).
+
+  • JPG et PNG
+    Des images exportées de chaque signature. Pratique pour voir le design
+    ou pour d’autres usages, mais pas idéal comme seule signature dans Gmail :
+    voir l’encadré ci-dessous.
+
+
+--------------------------------------------------------------------------------
+  IMPORTANT : JPG / PNG ET LIENS CLIQUABLES
+--------------------------------------------------------------------------------
+
+  Si vous insérez votre signature uniquement comme une image (fichier JPG ou PNG),
+  ce que les gens voient est une PHOTO : les numéros, adresses et icônes ne
+  sont pas de vrais liens Internet. On ne peut pas cliquer dessus.
+
+  Pour avoir une signature avec des liens qui fonctionnent dans Gmail, il faut
+  passer par le fichier HTML (méthode expliquée plus bas).
+
+
+--------------------------------------------------------------------------------
+  MÉTHODE RECOMMANDÉE : HTML → SITE « PROBADOR » → GMAIL
+--------------------------------------------------------------------------------
+
+  1) Ouvrez la version HTML que vous préférez
+     Dossier « HTML », par exemple :
+       hellopropre_signature_v3_minimaliste.html
+     avec un éditeur de texte simple, par exemple le Bloc-notes (Notepad) sous
+     Windows. Vous verrez tout le code : c’est normal.
+
+  2) Tout sélectionner et copier
+     Raccourci : Ctrl+A pour tout sélectionner, puis Ctrl+C pour copier.
+     (Vous pouvez aussi sélectionner à la souris et utiliser le menu contextuel :
+     Clic droit → Copier.)
+
+  3) Aller sur le site qui prépare la signature pour Gmail
+     Ouvrez ce lien dans votre navigateur :
+       https://solamentecodigoshtmlbybcn.jimdofree.com/probador-de-html/
+
+     Collez votre code dans la zone prévue (premier champ / zone de texte du
+     probador), avec Ctrl+V ou clic droit → Coller.
+
+     Lancez l’action prévue par le site (bouton du type « convertir », « voir
+     résultat », etc. — le site ouvre en général une NOUVELLE fenêtre ou un
+     nouvel onglet avec l’aperçu de votre signature).
+
+  4) Copier le résultat affiché dans le navigateur
+     Sur cette nouvelle page : Ctrl+A pour tout sélectionner, puis Ctrl+C pour
+     copier (ou clic droit → Copier).
+
+  5) Coller dans Gmail
+     Dans Gmail : Paramètres (roue dentée) → « Voir tous les paramètres »
+     → onglet « Général » → section « Signature ».
+
+     Créez une nouvelle signature (bouton « Créer »), donnez-lui un nom, placez le
+     curseur dans la grande zone de texte, puis Ctrl+V (ou clic droit →
+     Coller).
+
+     Enregistrez en bas de page (« Enregistrer les modifications »).
+
+  Vous devriez ainsi obtenir la mise en page souhaitée avec des liens cliquables.
+
+
+--------------------------------------------------------------------------------
+  ORDRE DE PRÉFÉRENCE (à titre personnel)
+--------------------------------------------------------------------------------
+
+  Si vous souhaitez un avis pour choisir : dans l’ordre, je préfère la version V3,
+  puis la V2, puis la V1.
+
+================================================================================
+  Réalisé par Léo Guillaume — https://dibodev.fr
+================================================================================

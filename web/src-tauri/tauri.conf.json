@@ -1,0 +1,51 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "SignDex",
+  "version": "0.1.0",
+  "identifier": "fr.dibodev.signdex",
+  "build": {
+    "beforeDevCommand": "cross-env NUXT_DESKTOP_BUILD=1 nuxt dev --port 1430",
+    "devUrl": "http://localhost:1430",
+    "beforeBuildCommand": "npm run desktop:generate",
+    "frontendDist": "../.output/public"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "SignDex",
+        "width": 1440,
+        "height": 900,
+        "resizable": true,
+        "minWidth": 1100,
+        "minHeight": 700
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "plugins": {
+    "shell": {
+      "open": "^((mailto:)|(tel:)|(https?://)|(file://)).+"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "createUpdaterArtifacts": false,
+    "targets": "all",
+    "icon": [
+      "icons/icon.ico",
+      "icons/icon.png",
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns"
+    ],
+    "windows": {
+      "nsis": {
+        "installerHooks": "nsis-hooks.nsh"
+      }
+    }
+  }
+}
+

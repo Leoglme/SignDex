@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Signature mail — v4 carte</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap">
+</head>
+<body>
+  <!--
+    Largeur ~580px (alignée sur les modèles v1–v3).
+    Compatible Gmail / Apple Mail / Outlook web (tables + styles inline).
+  -->
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+    <tr>
+      <td style="padding:0;">
+        <table role="presentation" width="580" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;border-spacing:0;width:580px;max-width:580px;background-color:#ffffff;border-radius:20px;">
+          <tr>
+            <td rowspan="2" width="145" style="width:145px;padding:0;vertical-align:top;mso-line-height-rule:exactly;font-size:0;line-height:0;">
+              <img src="{{ client.v4_corner_tl_url }}" width="145" height="105" alt="" style="display:block;border:0;width:145px;height:105px;">
+            </td>
+
+            <td rowspan="2" style="padding:21px 11px 21px 11px;vertical-align:middle;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+                <tr>
+                  <td style="vertical-align:middle;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+                      <tr>
+                        <td width="84" style="width:84px;vertical-align:middle;padding-right:15px;">
+                          <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=200&h=200&q=80" alt="" width="69" height="69" style="display:block;width:69px;height:69px;border-radius:69px;border:0;object-fit:cover;">
+                        </td>
+                        <td style="vertical-align:middle;">
+                          <div style="font-size:21px;font-weight:700;letter-spacing:0.4px;line-height:1.15;color:#2b2b2f;margin:0;padding:0;">
+                            NAME SURNAME
+                          </div>
+                          <div style="font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;line-height:1.4;color:#9a9aa2;margin:7px 0 0;padding:0;">
+                            CHIEF EXECUTIVE OFFICER
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="padding-top:18px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+                      <tr>
+                        <td width="50%" style="width:50%;vertical-align:top;padding-right:11px;">
+                          <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+                            <tr>
+                              <td width="28" style="width:28px;vertical-align:middle;">
+                                <table role="presentation" width="18" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;border-spacing:0;">
+                                  <tr>
+                                    <td width="18" height="18" style="width:18px;height:18px;background-color:#e6189d;border-radius:18px;line-height:0;font-size:0;text-align:center;">
+                                      <img src="https://img.icons8.com/ios-filled/50/ffffff/new-post.png" alt="" width="10" height="10" style="display:inline-block;width:10px;height:10px;border:0;vertical-align:middle;">
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                              <td style="vertical-align:middle;font-size:11px;line-height:1.4;color:#7a7a82;padding-left:5px;">
+                                <a href="mailto:name@company.com" style="color:#7a7a82;text-decoration:none;">name@company.com</a>
+                              </td>
+                            </tr>
+                          </table>
+
+                          {% if client.phone_primary_display %}
+                          <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;margin-top:10px;">
+                            <tr>
+                              <td width="28" style="width:28px;vertical-align:middle;">
+                                <table role="presentation" width="18" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;border-spacing:0;">
+                                  <tr>
+                                    <td width="18" height="18" style="width:18px;height:18px;background-color:#e6189d;border-radius:18px;line-height:0;font-size:0;text-align:center;">
+                                      <img src="https://img.icons8.com/ios-filled/50/ffffff/phone.png" alt="" width="10" height="10" style="display:inline-block;width:10px;height:10px;border:0;vertical-align:middle;">
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                              <td style="vertical-align:middle;font-size:11px;line-height:1.4;color:#7a7a82;padding-left:5px;">
+                                <a href="tel:+33756902818" style="color:#7a7a82;text-decoration:none;">07&nbsp;56&nbsp;90&nbsp;28&nbsp;18</a>
+                              </td>
+                            </tr>
+                          </table>
+                          {% endif %}
+                          {% if client.phone_secondary_display %}
+                          <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;margin-top:10px;">
+                            <tr>
+                              <td width="28" style="width:28px;vertical-align:middle;">
+                                <table role="presentation" width="18" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;border-spacing:0;">
+                                  <tr>
+                                    <td width="18" height="18" style="width:18px;height:18px;background-color:#e6189d;border-radius:18px;line-height:0;font-size:0;text-align:center;">
+                                      <img src="https://img.icons8.com/ios-filled/50/ffffff/phone.png" alt="" width="10" height="10" style="display:inline-block;width:10px;height:10px;border:0;vertical-align:middle;">
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                              <td style="vertical-align:middle;font-size:11px;line-height:1.4;color:#7a7a82;padding-left:5px;">
+                                <a href="tel:+33756968210" style="color:#7a7a82;text-decoration:none;">07&nbsp;56&nbsp;96&nbsp;82&nbsp;10</a>
+                              </td>
+                            </tr>
+                          </table>
+                          {% endif %}
+                        </td>
+
+                        <td width="50%" style="width:50%;vertical-align:top;padding-left:5px;">
+                          <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+                            <tr>
+                              <td width="28" style="width:28px;vertical-align:middle;">
+                                <table role="presentation" width="18" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;border-spacing:0;">
+                                  <tr>
+                                    <td width="18" height="18" style="width:18px;height:18px;background-color:#e6189d;border-radius:18px;line-height:0;font-size:0;text-align:center;">
+                                      <img src="https://img.icons8.com/ios-filled/50/ffffff/domain.png" alt="" width="10" height="10" style="display:inline-block;width:10px;height:10px;border:0;vertical-align:middle;">
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                              <td style="vertical-align:middle;font-size:11px;line-height:1.4;color:#7a7a82;padding-left:5px;white-space:nowrap;">
+                                <a href="https://www.namecompany.com" style="color:#7a7a82;text-decoration:none;white-space:nowrap;">www.namecompany.com</a>
+                              </td>
+                            </tr>
+                          </table>
+
+                          <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;margin-top:10px;">
+                            <tr>
+                              <td width="28" style="width:28px;vertical-align:middle;">
+                                <table role="presentation" width="18" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;border-spacing:0;">
+                                  <tr>
+                                    <td width="18" height="18" style="width:18px;height:18px;background-color:#e6189d;border-radius:18px;line-height:0;font-size:0;text-align:center;">
+                                      <img src="https://img.icons8.com/ios-filled/50/ffffff/linkedin.png" alt="" width="10" height="10" style="display:inline-block;width:10px;height:10px;border:0;vertical-align:middle;">
+                                    </td>
+                                  </tr>
+                                </table>
+                              </td>
+                              <td style="vertical-align:middle;font-size:11px;line-height:1.4;color:#7a7a82;padding-left:5px;white-space:nowrap;">
+                                <a href="https://www.linkedin.com/company/hellopropre" style="color:#7a7a82;text-decoration:none;white-space:nowrap;">https://www.linkedin.com/company/hellopropre</a>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+
+            <td width="121" style="width:121px;padding:14px 10px 4px 6px;vertical-align:top;mso-line-height-rule:exactly;text-align:right;line-height:0;font-size:0;">
+              {% if client.photo2_url %}
+              <img src="https://signdex.placeholder.invalid/v4-photo2-top-right.jpg" alt="" width="69" height="69" style="display:inline-block;width:69px;height:69px;border-radius:69px;border:0;object-fit:cover;vertical-align:top;">
+              {% else %}
+              &nbsp;
+              {% endif %}
+            </td>
+          </tr>
+          <tr>
+            <td width="121" style="width:121px;padding:0;vertical-align:bottom;mso-line-height-rule:exactly;text-align:right;line-height:0;font-size:0;">
+              <img src="{{ client.v4_corner_br_url }}" width="121" height="81" alt="" style="display:inline-block;border:0;width:121px;height:81px;vertical-align:bottom;">
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

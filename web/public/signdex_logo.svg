@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="SignDex">
+  <!-- White background to make the mark pop in small Windows icons -->
+  <rect x="0" y="0" width="256" height="256" rx="56" ry="56" fill="#ffffff"/>
+
+  <defs>
+    <linearGradient id="markGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c2148a"/>
+      <stop offset="100%" stop-color="#ff2bb1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Use the original SignDex mark (with the pink middle stroke) -->
+  <g transform="translate(128 132)">
+    <rect x="-72" y="-50" width="144" height="100" rx="14" ry="14" fill="url(#markGrad)" opacity="0.35" transform="rotate(-13)"/>
+    <rect x="-72" y="-50" width="144" height="100" rx="14" ry="14" fill="url(#markGrad)" opacity="0.65" transform="rotate(-4)"/>
+    <rect x="-72" y="-50" width="144" height="100" rx="14" ry="14" fill="url(#markGrad)" transform="rotate(6)"/>
+  </g>
+
+  <g transform="translate(128 132) rotate(6)">
+    <path d="M -50 16 C -32 -22, -10 32, 10 -2 C 22 -28, 42 12, 56 -10"
+          stroke="#ffffff" stroke-width="7" fill="none"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
+

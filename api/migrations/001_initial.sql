@@ -1,0 +1,31 @@
+-- SignDex initial schema (MariaDB / MySQL compatible)
+
+CREATE TABLE IF NOT EXISTS schema_migrations (
+  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  filename VARCHAR(255) NOT NULL UNIQUE,
+  applied_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS clients (
+  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL UNIQUE,
+  subtitle VARCHAR(255) NULL,
+  website_url VARCHAR(1024) NULL,
+  email VARCHAR(255) NULL,
+  phone_primary VARCHAR(64) NULL,
+  phone_secondary VARCHAR(64) NULL,
+  linkedin_url VARCHAR(1024) NULL,
+  instagram_url VARCHAR(1024) NULL,
+  facebook_url VARCHAR(1024) NULL,
+  tiktok_url VARCHAR(1024) NULL,
+  youtube_url VARCHAR(1024) NULL,
+  color_primary VARCHAR(32) NULL,
+  color_secondary VARCHAR(32) NULL,
+  logo_url VARCHAR(2048) NULL,
+  photo1_url VARCHAR(2048) NULL,
+  photo2_url VARCHAR(2048) NULL,
+  notes TEXT NULL,
+  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+

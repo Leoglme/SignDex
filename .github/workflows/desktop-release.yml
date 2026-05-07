@@ -1,0 +1,57 @@
+name: Desktop build & release (Tauri)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'web/**'
+      - '.github/workflows/desktop-release.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: signdex-desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-desktop:
+    name: Build desktop (windows)
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build and publish desktop artifacts
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUXT_PUBLIC_API_BASE: ${{ secrets.NUXT_PUBLIC_API_BASE }}
+          NUXT_PUBLIC_SITE_URL: ${{ secrets.NUXT_PUBLIC_SITE_URL }}
+        with:
+          projectPath: web
+          tagName: v0.1.${{ github.run_number }}
+          releaseName: "SignDex Desktop v0.1.${{ github.run_number }}"
+          releaseBody: |
+            Build Windows (Tauri + Nuxt).
+
+            **Version appli :** `0.1.${{ github.run_number }}` (semver patch = numéro de run GitHub Actions).
+          releaseDraft: false
+          prerelease: false

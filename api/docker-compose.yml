@@ -1,0 +1,63 @@
+name: signdex
+
+services:
+  mariadb:
+    container_name: signdex-mariadb
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootsecret}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-signdex}
+      MYSQL_USER: ${MYSQL_USER:-signdex}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-signdex}
+    ports:
+      - "${MYSQL_PORT:-3307}:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    image: signdex-api:latest
+    container_name: signdex-api
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-8010}:8000"
+    environment:
+      DATABASE_URL: mysql+pymysql://signdex:signdex@mariadb:3306/signdex
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+      SUPABASE_URL: ${SUPABASE_URL:-}
+      SUPABASE_API_KEY: ${SUPABASE_API_KEY:-}
+      SUPABASE_STORAGE_BUCKET: ${SUPABASE_STORAGE_BUCKET:-SignDex}
+      SIGNDEX_TEMPLATES_DIR: ${SIGNDEX_TEMPLATES_DIR:-/app/templates}
+      SIGNDEX_SEED_IF_EMPTY: ${SIGNDEX_SEED_IF_EMPTY:-1}
+    volumes:
+      - .:/app
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    command: >
+      sh -c "PYTHONPATH=/app python migrations/run_migrations.py &&
+      PYTHONPATH=/app python seeders/conditional_seed.py &&
+      PYTHONPATH=/app uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+
+  phpmyadmin:
+    container_name: signdex-phpmyadmin
+    image: phpmyadmin:5
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mariadb
+      PMA_USER: root
+      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootsecret}
+    ports:
+      - "${PHPMYADMIN_PORT:-8081}:80"
+    depends_on:
+      - mariadb
+
+volumes:
+  mariadb_data:
+

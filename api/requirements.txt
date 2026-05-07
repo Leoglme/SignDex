@@ -1,0 +1,24 @@
+# HTTP / API
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+python-multipart>=0.0.9
+pydantic[email]>=2.10.0,<3
+pydantic-settings>=2.0.0,<3
+python-dotenv>=1.0.0
+
+# Database
+SQLAlchemy>=2.0.0
+pymysql>=1.1.0
+
+# Templates & generation
+jinja2>=3.1.0
+beautifulsoup4>=4.12.0
+
+# Images
+Pillow>=10.0.0
+
+# Supabase Storage
+supabase>=2.0.0
+
+# HTML -> PNG via Chromium
+playwright>=1.45.0
