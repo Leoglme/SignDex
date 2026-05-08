@@ -27,11 +27,17 @@
   "plugins": {
     "shell": {
       "open": "^((mailto:)|(tel:)|(https?://)|(file://)).+"
+    },
+    "updater": {
+      "endpoints": [
+        "https://github.com/Leoglme/SignDex/releases/latest/download/latest.json"
+      ],
+      "pubkey": "__TAURI_UPDATER_PUBKEY__"
     }
   },
   "bundle": {
     "active": true,
-    "createUpdaterArtifacts": false,
+    "createUpdaterArtifacts": true,
     "targets": "all",
     "icon": [
       "icons/icon.ico",

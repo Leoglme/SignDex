@@ -1,5 +1,6 @@
 <template>
   <UApp>
+    <SignDexDesktopUpdaterPanel />
     <NuxtLoadingIndicator />
     <NuxtLayout>
       <NuxtPage />

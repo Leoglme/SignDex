@@ -76,6 +76,24 @@ jobs:
       - name: Pack api tree
         run: tar -czf api-bundle.tar.gz api
 
+      # Le SCP extrait dans DEPLOY_API_DIR en écrivant api-bundle.tar.gz : le dossier doit
+      # exister et appartenir à SSH_USERNAME (sinon « Permission denied » au untar drone-scp).
+      - name: Ensure deploy directory (before SCP)
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          DEPLOY_API_DIR: ${{ secrets.DEPLOY_API_DIR }}
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: DEPLOY_API_DIR
+          script: |
+            set -euo pipefail
+            TARGET="${DEPLOY_API_DIR%/}"
+            mkdir -p "$TARGET"
+            rm -f "$TARGET/api-bundle.tar.gz"
+
       - name: Upload to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -85,6 +103,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: api-bundle.tar.gz
           target: ${{ secrets.DEPLOY_API_DIR }}
+          overwrite: true
 
       - name: Extract, venv, systemd, nginx
         uses: appleboy/ssh-action@v1.0.3
