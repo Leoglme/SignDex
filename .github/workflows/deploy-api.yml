@@ -140,8 +140,10 @@ jobs:
             pip install -r "$APP_ROOT/requirements.txt" --no-cache-dir
             python -m playwright install chromium
             deactivate
-            "$APP_ROOT/.venv/bin/python" "$APP_ROOT/migrations/run_migrations.py"
-            "$APP_ROOT/.venv/bin/python" "$APP_ROOT/seeders/conditional_seed.py"
+            # Les scripts importent `core.*` en top-level ; on doit donc ajouter
+            # `$APP_ROOT` au PYTHONPATH pour que Python trouve le package.
+            PYTHONPATH="$APP_ROOT" "$APP_ROOT/.venv/bin/python" "$APP_ROOT/migrations/run_migrations.py"
+            PYTHONPATH="$APP_ROOT" "$APP_ROOT/.venv/bin/python" "$APP_ROOT/seeders/conditional_seed.py"
             sudo tee "/etc/systemd/system/${SVC}" > /dev/null <<EOF
             [Unit]
             Description=SignDex FastAPI (Uvicorn)
