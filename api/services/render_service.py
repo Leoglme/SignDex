@@ -220,13 +220,31 @@ def _to_jinja(html: str) -> str:
 
 @dataclass(frozen=True)
 class RenderOverrides:
-    """Valeurs None = ne pas modifier par rapport à la fiche client."""
+    """Valeurs None = ne pas modifier par rapport à la fiche client.
+
+    `color_primary` / `color_secondary` sont **appliquées avant** `swap_colors` :
+    on remplace d'abord les couleurs effectives par les overrides utilisateur, puis on permute si demandé.
+    Cela permet à l'utilisateur de saisir ses 2 couleurs voulues *et* d'utiliser le swap dessus.
+    """
 
     swap_colors: bool = False
     logo_url: str | None = None
     photo1_url: str | None = None
     photo2_url: str | None = None
     show_side_photo: bool = True
+    color_primary: str | None = None
+    color_secondary: str | None = None
+
+
+def _address_first_line(notes: str | None) -> str:
+    """Première ligne non vide de `notes` — convention : on stocke l'adresse là pour les flyers / cartes."""
+    if not notes:
+        return ""
+    for line in notes.splitlines():
+        s = line.strip()
+        if s:
+            return s
+    return ""
 
 
 def build_client_render_dict(client: Client) -> dict[str, Any]:
@@ -240,9 +258,18 @@ def build_client_render_dict(client: Client) -> dict[str, Any]:
         s = (slug or "").strip()
         return escape(s) if s else ""
 
+    firstname = (client.firstname or "").strip()
+    lastname = (client.lastname or "").strip()
+    full_name = " ".join(p for p in (firstname, lastname) if p)
+
     return {
         "name": client.name,
         "subtitle": client.subtitle,
+        "firstname": firstname,
+        "lastname": lastname,
+        # `full_name` = "Prénom Nom" si renseignés ; sinon vide. Les templates qui veulent le contact humain
+        # peuvent utiliser : `{{ client.full_name or client.name }}` pour garder un fallback propre.
+        "full_name": full_name,
         "website_url": client.website_url,
         "website_label": (client.website_url or "").replace("https://", "").replace("http://", ""),
         "email": client.email,
@@ -268,6 +295,7 @@ def build_client_render_dict(client: Client) -> dict[str, Any]:
         "photo2_url": client.photo2_url,
         "show_side_photo": True,
         "notes": client.notes,
+        "address": _address_first_line(client.notes),
     }
 
 
@@ -275,6 +303,11 @@ def apply_render_overrides(data: dict[str, Any], overrides: RenderOverrides | No
     if overrides is None:
         return data
     out = dict(data)
+    # 1) Override couleurs avant swap : l'utilisateur saisit les 2 couleurs voulues, swap permute ensuite.
+    if overrides.color_primary is not None:
+        out["color_primary"] = overrides.color_primary or None
+    if overrides.color_secondary is not None:
+        out["color_secondary"] = overrides.color_secondary or None
     if overrides.swap_colors:
         p, s = out.get("color_primary"), out.get("color_secondary")
         out["color_primary"], out["color_secondary"] = s, p
@@ -302,7 +335,42 @@ def render_signature_html(
     return tpl.render(client=ctx)
 
 
+def render_jinja_html(
+    *,
+    template_html: str,
+    client: Client,
+    overrides: RenderOverrides | None = None,
+) -> str:
+    """Rendu direct d'un template déjà écrit en Jinja.
+
+    À utiliser pour les nouveaux services (flyers, bannières, cartes) : leurs templates contiennent déjà
+    des expressions `{{ ... }}`. Ne PAS passer par `_to_jinja()` (réservé aux signatures historiques),
+    sinon on risque de modifier des `#xxxxxx` à l'intérieur des expressions Jinja et casser la syntaxe.
+    """
+    ctx = apply_render_overrides(build_client_render_dict(client), overrides)
+    apply_v4_corner_asset_urls(ctx)
+    env = Environment(undefined=StrictUndefined, autoescape=False)
+    tpl = env.from_string(template_html)
+    return tpl.render(client=ctx)
+
+
 ImageSlotSource = Literal["default", "logo", "photo1", "photo2"]
+
+
+def _normalize_color_override(value: str | None, current: str | None) -> str | None:
+    """Renvoie la valeur d'override seulement si l'utilisateur a réellement modifié la couleur.
+
+    - `None` ou chaîne vide → pas d'override (utilise la couleur de la fiche client).
+    - identique (insensible à la casse) à la couleur courante → pas d'override.
+    """
+    if value is None:
+        return None
+    s = value.strip()
+    if not s:
+        return None
+    if current and s.lower() == current.strip().lower():
+        return None
+    return s
 
 
 def render_overrides_from_image_slots(
@@ -313,8 +381,10 @@ def render_overrides_from_image_slots(
     photo1_slot: ImageSlotSource = "default",
     photo2_slot: ImageSlotSource = "default",
     show_side_photo: bool = True,
+    color_primary: str | None = None,
+    color_secondary: str | None = None,
 ) -> RenderOverrides | None:
-    """Réassigne logo / photo1 / photo2 de la signature à partir des médias de la fiche client."""
+    """Réassigne logo / photo1 / photo2 et couleurs de la signature à partir des choix éditeur."""
     bucket: dict[str, str | None] = {
         "logo": client.logo_url,
         "photo1": client.photo1_url,
@@ -329,8 +399,11 @@ def render_overrides_from_image_slots(
     o_logo = pick_override("logo", logo_slot)
     o_p1 = pick_override("photo1", photo1_slot)
     o_p2 = pick_override("photo2", photo2_slot)
+    o_c1 = _normalize_color_override(color_primary, client.color_primary)
+    o_c2 = _normalize_color_override(color_secondary, client.color_secondary)
     has_img = any(x is not None for x in (o_logo, o_p1, o_p2))
-    if not swap_colors and not has_img and show_side_photo:
+    has_color = o_c1 is not None or o_c2 is not None
+    if not swap_colors and not has_img and not has_color and show_side_photo:
         return None
     return RenderOverrides(
         swap_colors=swap_colors,
@@ -338,6 +411,8 @@ def render_overrides_from_image_slots(
         photo1_url=o_p1,
         photo2_url=o_p2,
         show_side_photo=show_side_photo,
+        color_primary=o_c1,
+        color_secondary=o_c2,
     )
 
 

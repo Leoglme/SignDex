@@ -42,3 +42,31 @@ def load_template_html(template_key: str) -> str:
         raise FileNotFoundError(f"Template introuvable: {template_key}")
     return p.read_text(encoding="utf-8", errors="strict")
 
+
+def list_service_templates(service: str) -> list[TemplateInfo]:
+    """Liste les templates d'un service non-signature.
+
+    Conventions:
+    - Les signatures historiques restent à la racine de `signdex_templates_dir`.
+    - Les autres services sont dans `signdex_templates_dir/<service>/*.html`.
+    """
+    settings = get_settings()
+    base = Path(settings.signdex_templates_dir) / service
+    if not base.exists():
+        return []
+    items: list[TemplateInfo] = []
+    for p in sorted(base.glob("*.html")):
+        raw = p.read_text(encoding="utf-8", errors="ignore")
+        title = _extract_title(raw)
+        items.append(TemplateInfo(key=p.stem, filename=p.name, title=title))
+    return items
+
+
+def load_service_template_html(service: str, template_key: str) -> str:
+    settings = get_settings()
+    base = Path(settings.signdex_templates_dir) / service
+    p = base / f"{template_key}.html"
+    if not p.exists():
+        raise FileNotFoundError(f"Template introuvable ({service}): {template_key}")
+    return p.read_text(encoding="utf-8", errors="strict")
+

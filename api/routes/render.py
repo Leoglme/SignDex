@@ -18,6 +18,8 @@ def _placeholder_client() -> Client:
     return Client(
         name="Nom du client",
         subtitle="Sous-titre / slogan",
+        firstname="Prénom",
+        lastname="Nom",
         website_url="https://example.com",
         email="contact@example.com",
         phone_primary="06 12 34 56 78",
@@ -33,7 +35,7 @@ def _placeholder_client() -> Client:
         logo_url="",
         photo1_url="",
         photo2_url="",
-        notes="Ville / pays",
+        notes="12 rue Exemple, 75000 Ville",
     )
 
 
@@ -73,6 +75,8 @@ def render_preview(
         photo1_slot=payload.photo1_slot,
         photo2_slot=payload.photo2_slot,
         show_side_photo=payload.show_side_photo,
+        color_primary=payload.color_primary,
+        color_secondary=payload.color_secondary,
     )
     html = render_signature_html(template_html=raw, client=client, overrides=overrides)
     return Response(content=html, media_type="text/html; charset=utf-8")

@@ -1,0 +1,148 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Flyer A4 (portrait) — v2 photo dominante</title>
+    <style>
+      :root {
+        --c1: {{ client.color_primary or '#0f172a' }};
+        --c2: {{ client.color_secondary or '#f59e0b' }};
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #f2f4f7; }
+      table { border-collapse: collapse; }
+      .page {
+        width: 794px;
+        height: 1123px;
+        background: #fff;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+        position: relative;
+        overflow: hidden;
+      }
+      .photo {
+        position: absolute;
+        inset: 0 0 38% 0;
+        background:
+          linear-gradient(180deg, rgba(15,23,42,0) 30%, rgba(15,23,42,0.55) 100%),
+          url("{{ client.photo1_url or client.photo2_url or client.logo_url or '' }}");
+        background-size: cover;
+        background-position: center;
+        background-color: var(--c1);
+      }
+      .photo .badge {
+        position: absolute;
+        top: 32px;
+        left: 32px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.92);
+        color: #0f172a;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+      }
+      .photo .name {
+        position: absolute;
+        left: 38px;
+        right: 38px;
+        bottom: 26px;
+        color: #fff;
+        font-size: 44px;
+        font-weight: 950;
+        line-height: 1.05;
+        letter-spacing: -0.02em;
+        text-shadow: 0 4px 14px rgba(0,0,0,0.35);
+      }
+      .panel {
+        position: absolute;
+        left: 38px;
+        right: 38px;
+        bottom: 38px;
+        height: calc(38% - 76px);
+        background: #fff;
+        border-radius: 22px;
+        box-shadow: 0 16px 40px -16px rgba(15,23,42,0.25);
+        border: 1px solid #e5e7eb;
+        padding: 28px 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .row { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+      .sub { color: #334155; font-size: 14px; line-height: 1.6; }
+      .accent { color: var(--c2); font-weight: 800; }
+      .cta {
+        display: inline-flex;
+        gap: 10px;
+        align-items: center;
+        padding: 12px 16px;
+        border-radius: 14px;
+        background: var(--c1);
+        color: #fff;
+        font-weight: 800;
+      }
+      .meta {
+        margin-top: auto;
+        padding-top: 12px;
+        border-top: 1px dashed #e5e7eb;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        color: #475569;
+        font-size: 12.5px;
+      }
+      .logo {
+        width: 56px; height: 56px; border-radius: 12px; overflow: hidden;
+        background: #f8fafc; border: 1px solid #e5e7eb; flex: 0 0 auto;
+      }
+      .logo img { width: 100%; height: 100%; object-fit: contain; background: #fff; }
+      .dot { color: #94a3b8; }
+      a { color: inherit; text-decoration: none; }
+    </style>
+  </head>
+  <body>
+    <table role="presentation" class="page">
+      <tr>
+        <td valign="top">
+          <div class="photo">
+            <div class="badge">{{ client.subtitle or 'Promo' }}</div>
+            <div class="name">{{ client.name }}</div>
+          </div>
+          <div class="panel">
+            <div class="row">
+              <div>
+                <div style="font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: #64748b; font-weight: 800;">
+                  Découvrez l'<span class="accent">offre</span>
+                </div>
+                <div class="sub" style="margin-top: 6px;">
+                  Texte court qui décrit l'offre, l'événement ou le service.<br/>
+                  Ajoute 2-3 lignes simples et lisibles.
+                </div>
+              </div>
+              <div class="logo">{% if client.logo_url %}<img src="{{ client.logo_url }}" alt="" />{% endif %}</div>
+            </div>
+
+            <div class="row">
+              <div class="cta">
+                Contactez-nous
+              </div>
+              <div style="text-align: right; font-size: 13px; color: #0f172a;">
+                <div style="font-weight: 800;">{{ client.phone_primary_display or '' }}</div>
+                <div style="color:#475569;">{{ client.email or '' }}</div>
+              </div>
+            </div>
+
+            <div class="meta">
+              {% if client.website_url %}<span><a href="{{ client.website_url }}">{{ client.website_label or client.website_url }}</a></span>{% endif %}
+              {% if client.linkedin_url %}<span class="dot">•</span><span><a href="{{ client.linkedin_url }}">LinkedIn</a></span>{% endif %}
+              {% if client.instagram_url %}<span class="dot">•</span><span><a href="{{ client.instagram_url }}">Instagram</a></span>{% endif %}
+              {% if client.facebook_url %}<span class="dot">•</span><span><a href="{{ client.facebook_url }}">Facebook</a></span>{% endif %}
+            </div>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

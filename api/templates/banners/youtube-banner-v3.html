@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>YouTube banner — v3 photo premium</title>
+    <!-- YouTube channel art: 2560×1440 px. Contenu critique dans la safe area 1546×423. -->
+    <style>
+      :root {
+        --c1: {{ client.color_primary or '#0f172a' }};
+        --c2: {{ client.color_secondary or '#f59e0b' }};
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #0b1220; }
+      .b {
+        width: 2560px; height: 1440px;
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+        position: relative; overflow: hidden; color: #fff;
+        background:
+          {% if client.photo1_url or client.photo2_url %}
+          linear-gradient(180deg, rgba(15,23,42,0.78) 0%, rgba(15,23,42,0.55) 100%),
+          url("{{ client.photo1_url or client.photo2_url }}")
+          {% else %}
+          radial-gradient(1400px 900px at 50% 50%, rgba(245,158,11,0.10), rgba(245,158,11,0) 55%),
+          linear-gradient(135deg, var(--c1) 0%, #1e293b 100%)
+          {% endif %};
+        background-size: cover; background-position: center;
+      }
+      /* Vignette */
+      .vignette { position: absolute; inset: 0; background: radial-gradient(closest-side, rgba(0,0,0,0) 50%, rgba(0,0,0,0.55) 100%); pointer-events: none; }
+
+      .safe {
+        position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+        width: 1546px; height: 423px;
+        display: grid; grid-template-columns: 1fr auto;
+        align-items: center; gap: 48px;
+      }
+      .left { display: flex; flex-direction: column; gap: 12px; max-width: 920px; }
+      .accent { color: var(--c2); font-weight: 800; letter-spacing: .3em; text-transform: uppercase; font-size: 13px; }
+      .name { font-size: 64px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.02; }
+      .sub { font-size: 20px; opacity: 0.94; max-width: 880px; line-height: 1.4; font-weight: 500; }
+      .row { margin-top: 14px; display: inline-flex; align-items: center; gap: 14px; align-self: flex-start; }
+      .cta {
+        background: var(--c2); color: #1f2937;
+        padding: 14px 22px; border-radius: 16px;
+        font-weight: 900; font-size: 16px;
+        box-shadow: 0 12px 30px rgba(245,158,11,0.32);
+      }
+      .meta { font-size: 14px; opacity: 0.9; font-weight: 600; }
+      .right { display: flex; align-items: center; gap: 22px; }
+      .vsep { width: 1px; height: 280px; background: linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,0.32) 25%, rgba(255,255,255,0.32) 75%, rgba(255,255,255,0)); }
+      .card { display: flex; flex-direction: column; gap: 10px; align-items: flex-end; text-align: right; }
+      .card .role { font-size: 13px; letter-spacing: .26em; text-transform: uppercase; color: var(--c2); font-weight: 800; }
+      .card .url { font-size: 20px; font-weight: 800; }
+      .card .info { font-size: 14px; opacity: 0.92; line-height: 1.5; font-weight: 600; }
+      .logo {
+        width: 130px; height: 130px; border-radius: 26px; overflow: hidden;
+        background: rgba(255,255,255,0.96); flex: 0 0 auto;
+        box-shadow: 0 16px 36px rgba(0,0,0,0.30);
+      }
+      .logo img { width: 100%; height: 100%; object-fit: contain; }
+    </style>
+  </head>
+  <body>
+    <div class="b">
+      <div class="vignette"></div>
+      <div class="safe">
+        <div class="left">
+          <div class="accent">— {{ client.subtitle or 'Chaîne officielle' }}</div>
+          <div class="name">{{ client.name }}</div>
+          <div class="sub">{{ client.subtitle or '' }}</div>
+          <div class="row">
+            <div class="cta">{{ client.website_label or client.website_url or 'S\'abonner' }}</div>
+            <div class="meta">
+              {% if client.email %}{{ client.email }}{% endif %}
+            </div>
+          </div>
+        </div>
+        <div class="right">
+          <div class="vsep"></div>
+          <div class="card">
+            <div class="role">— Chaîne</div>
+            <div class="url">{{ client.website_label or client.website_url or '' }}</div>
+            <div class="info">
+              {% if client.youtube_slug %}{{ client.youtube_slug }}<br/>{% endif %}
+              {% if client.email %}{{ client.email }}{% endif %}
+            </div>
+          </div>
+          <div class="logo">{% if client.logo_url %}<img src="{{ client.logo_url }}" alt="" />{% endif %}</div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

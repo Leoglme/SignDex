@@ -1,0 +1,203 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Carte de visite — v3 luxe noir & or</title>
+    <!-- Carte = 1050×600 (3.5"×2" @300dpi). Sheet = 2160×620 (recto + verso, gap 60). -->
+    <style>
+      :root {
+        --c1: {{ client.color_primary or '#0b0d12' }};
+        --c2: {{ client.color_secondary or '#d4af37' }};
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #0b0d12; }
+      table { border-collapse: collapse; }
+      .sheet {
+        width: 2160px; height: 620px; padding: 10px 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+        display: flex; gap: 60px; align-items: center; justify-content: center;
+      }
+      .card {
+        width: 1050px; height: 600px;
+        border-radius: 26px; overflow: hidden;
+        position: relative;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+      }
+      /* RECTO */
+      .recto {
+        background:
+          radial-gradient(900px 600px at 100% -20%, rgba(212,175,55,0.18), rgba(212,175,55,0) 60%),
+          linear-gradient(180deg, #11141b 0%, #0b0d12 100%);
+        color: #fff;
+        padding: 70px 70px 60px;
+        display: flex; flex-direction: column; justify-content: space-between;
+        border: 1px solid rgba(212,175,55,0.35);
+      }
+      .recto .top { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+      .recto .accent {
+        color: var(--c2); font-weight: 800; letter-spacing: .32em; text-transform: uppercase; font-size: 12px;
+      }
+      .recto .name {
+        font-family: "Times New Roman", Georgia, "Cormorant Garamond", serif;
+        margin-top: 28px;
+        font-size: 70px; font-weight: 700; line-height: 1; letter-spacing: -0.01em;
+      }
+      .recto .role { margin-top: 16px; font-size: 18px; color: #cbd5e1; font-weight: 500; }
+      .recto .website {
+        margin-top: 20px;
+        display: inline-flex; align-items: center; gap: 10px;
+        padding: 11px 16px; border-radius: 999px;
+        background: rgba(212,175,55,0.10); border: 1px solid rgba(212,175,55,0.45);
+        color: var(--c2); font-weight: 800; font-size: 16px; letter-spacing: .04em;
+      }
+      /* Pastille logo = couleur secondaire (distincte du pill site en or, même variable --c2) */
+      .logo {
+        width: 96px; height: 96px; border-radius: 22px; overflow: hidden;
+        background: var(--c2);
+        border: 1px solid rgba(212, 175, 55, 0.45);
+        flex: 0 0 auto;
+        display: flex; align-items: center; justify-content: center;
+        padding: 10px;
+      }
+      .logo img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+      .recto .rule {
+        height: 1px; background: linear-gradient(90deg, var(--c2), rgba(212,175,55,0));
+        margin-top: 22px;
+      }
+      /* VERSO */
+      .verso {
+        background:
+          radial-gradient(900px 600px at 0% 120%, rgba(212,175,55,0.10), rgba(212,175,55,0) 60%),
+          #0b0d12;
+        color: #f8fafc;
+        padding: 70px 70px 60px;
+        border: 1px solid rgba(212,175,55,0.30);
+        display: flex; flex-direction: column; justify-content: space-between;
+      }
+      .verso .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+      .verso .head .who .ttl {
+        color: var(--c2); font-weight: 800; letter-spacing: .28em; text-transform: uppercase; font-size: 12px;
+      }
+      .verso .head .who .nm {
+        margin-top: 12px;
+        font-family: "Times New Roman", Georgia, "Cormorant Garamond", serif;
+        font-size: 36px; font-weight: 700; letter-spacing: -0.01em;
+      }
+      .verso .logo-mini {
+        width: 64px; height: 64px; border-radius: 14px; overflow: hidden;
+        background: var(--c2);
+        border: 1px solid rgba(212, 175, 55, 0.45);
+        flex: 0 0 auto;
+        display: flex; align-items: center; justify-content: center;
+        padding: 8px;
+      }
+      .verso .logo-mini img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+      .lines { display: flex; flex-direction: column; gap: 16px; }
+      .line { display: flex; align-items: center; gap: 16px; }
+      .ic {
+        width: 38px; height: 38px;
+        border: 1.5px solid var(--c2);
+        border-radius: 4px;
+        background: transparent;
+        display: flex; align-items: center; justify-content: center;
+        flex: 0 0 auto;
+      }
+      .ic svg { width: 20px; height: 20px; color: var(--c2); }
+      .v { font-size: 17px; color: #e2e8f0; font-weight: 600; }
+      a { color: inherit; text-decoration: none; }
+    </style>
+  </head>
+  <body>
+    <table role="presentation" class="sheet"><tr><td valign="middle">
+      <div style="display: flex; gap: 60px; align-items: center;">
+
+        <!-- RECTO -->
+        <div class="card recto">
+          <div>
+            <div class="top">
+              <div class="accent">{{ client.name }}</div>
+              <div class="logo">{% if client.logo_url %}<img src="{{ client.logo_url }}" alt="" />{% endif %}</div>
+            </div>
+            <div class="name">{{ client.full_name or client.name }}</div>
+            <div class="role">{{ client.subtitle or '' }}</div>
+          </div>
+          <div>
+            <div class="rule"></div>
+            <div style="margin-top: 18px;">
+              <span class="website">{{ client.website_label or client.website_url or '' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- VERSO -->
+        <div class="card verso">
+          <div class="head">
+            <div class="who">
+              <div class="ttl">— Contact</div>
+              <div class="nm">{{ client.full_name or client.name }}</div>
+            </div>
+            <div class="logo-mini">{% if client.logo_url %}<img src="{{ client.logo_url }}" alt="" />{% endif %}</div>
+          </div>
+          <div class="lines">
+            {% if client.email %}
+              <div class="line">
+                <div class="ic" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2"/>
+                    <path d="m22 7-10 6L2 7"/>
+                  </svg>
+                </div>
+                <div class="v">{{ client.email }}</div>
+              </div>
+            {% endif %}
+            {% if client.phone_primary_display %}
+              <div class="line">
+                <div class="ic" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.86 19.86 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                  </svg>
+                </div>
+                <div class="v">{{ client.phone_primary_display }}</div>
+              </div>
+            {% endif %}
+            {% if client.website_url %}
+              <div class="line">
+                <div class="ic" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9"/>
+                    <path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/>
+                  </svg>
+                </div>
+                <div class="v">{{ client.website_label or client.website_url }}</div>
+              </div>
+            {% endif %}
+            {% if client.address %}
+              <div class="line">
+                <div class="ic" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13z"/>
+                    <circle cx="12" cy="9" r="2.5"/>
+                  </svg>
+                </div>
+                <div class="v">{{ client.address }}</div>
+              </div>
+            {% endif %}
+            {% if client.linkedin_url %}
+              <div class="line">
+                <div class="ic" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                    <rect x="2" y="9" width="4" height="12"/>
+                    <circle cx="4" cy="4" r="2"/>
+                  </svg>
+                </div>
+                <div class="v"><a href="{{ client.linkedin_url }}">{{ client.linkedin_slug or client.linkedin_url }}</a></div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+    </td></tr></table>
+  </body>
+</html>

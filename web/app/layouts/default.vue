@@ -59,9 +59,41 @@ const signDexMainNavItems: ComputedRef<NavigationMenuItem[]> = computed(() => [
     },
   },
   {
-    label: 'Templates',
-    icon: 'i-lucide-layout-template',
+    label: 'Signatures',
+    icon: 'i-lucide-mail',
     to: '/templates',
+    onSelect: () => {
+      open.value = false
+    },
+  },
+  {
+    label: 'Flyer',
+    icon: 'i-lucide-file-text',
+    to: '/services/flyer',
+    onSelect: () => {
+      open.value = false
+    },
+  },
+  {
+    label: 'Bannières réseaux',
+    icon: 'i-lucide-image',
+    to: '/services/banners',
+    onSelect: () => {
+      open.value = false
+    },
+  },
+  {
+    label: 'Cartes de visite',
+    icon: 'i-lucide-credit-card',
+    to: '/services/cards-visite',
+    onSelect: () => {
+      open.value = false
+    },
+  },
+  {
+    label: 'Cartes de fidélité',
+    icon: 'i-lucide-badge-check',
+    to: '/services/cards-fidelite',
     onSelect: () => {
       open.value = false
     },

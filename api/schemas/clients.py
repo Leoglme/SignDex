@@ -6,8 +6,11 @@ from pydantic import BaseModel, Field
 
 
 class ClientCreate(BaseModel):
-    name: str = Field(min_length=1, max_length=255)
+    name: str = Field(min_length=1, max_length=255, description="Nom d'entreprise / company name (unique).")
     subtitle: str | None = None
+
+    firstname: str | None = Field(default=None, max_length=128)
+    lastname: str | None = Field(default=None, max_length=128)
 
     website_url: str | None = None
     email: str | None = None
@@ -33,6 +36,8 @@ class ClientCreate(BaseModel):
 class ClientUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=255)
     subtitle: str | None = None
+    firstname: str | None = Field(default=None, max_length=128)
+    lastname: str | None = Field(default=None, max_length=128)
     website_url: str | None = None
     email: str | None = None
     phone_primary: str | None = None
@@ -54,6 +59,8 @@ class ClientOut(BaseModel):
     id: int
     name: str
     subtitle: str | None
+    firstname: str | None
+    lastname: str | None
     website_url: str | None
     email: str | None
     phone_primary: str | None

@@ -1,0 +1,239 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Carte de fidélité — v4 vagues navy & serif</title>
+    <!--
+      Déclinaison fidélité du style ULj2P (vagues + Crimson Pro).
+      Recto : nom entreprise façon "HIMSON PALOD" à gauche + vagues à droite, programme + 10 tampons en bas.
+      Verso : zone à droite avec conditions + contacts, vagues à gauche (miroir).
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600;700&family=Inter:wght@500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --c1: {{ client.color_primary or '#001a59' }};
+        --c2: {{ client.color_secondary or '#3267e7' }};
+        --c2-soft: rgba(50, 103, 231, 0.8);
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #eef2f7; }
+      table { border-collapse: collapse; }
+      .sheet {
+        width: 2160px; height: 620px; padding: 10px 0;
+        font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+        display: flex; gap: 60px; align-items: center; justify-content: center;
+      }
+      .card {
+        width: 1050px; height: 600px;
+        background: #ffffff;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 22px 60px rgba(15, 23, 42, 0.18);
+        border: 1px solid #e2e8f0;
+      }
+      .card .bg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+      .card .bg svg { display: block; width: 100%; height: 100%; }
+
+      /* === RECTO === */
+      .recto-name {
+        position: absolute; left: 60px; top: 60px;
+        font-family: "Crimson Pro", serif;
+        font-size: 52px; font-weight: 600;
+        letter-spacing: 0.04em;
+        color: var(--c1);
+        text-transform: uppercase;
+        line-height: 1;
+        z-index: 1;
+        max-width: 480px;
+      }
+      .recto-tag {
+        position: absolute; left: 60px; top: 130px;
+        font-family: "Crimson Pro", serif;
+        font-size: 22px; font-weight: 400;
+        letter-spacing: 0.30em;
+        color: var(--c1);
+        text-transform: lowercase;
+        z-index: 1;
+      }
+
+      .recto-program {
+        position: absolute; left: 60px; top: 220px;
+        font-family: "Crimson Pro", serif;
+        font-size: 28px; font-weight: 600;
+        letter-spacing: 0.18em;
+        color: var(--c1);
+        text-transform: uppercase;
+        z-index: 1;
+      }
+      .recto-sub {
+        position: absolute; left: 60px; top: 270px;
+        font-family: "Inter", sans-serif;
+        font-size: 16px; font-weight: 500;
+        color: var(--c1);
+        opacity: 0.85;
+        max-width: 440px;
+        line-height: 1.45;
+        z-index: 1;
+      }
+
+      .stamps {
+        position: absolute; left: 60px; bottom: 60px;
+        display: grid; grid-template-columns: repeat(5, 64px); grid-auto-rows: 64px;
+        gap: 14px;
+        z-index: 1;
+      }
+      .stamp {
+        width: 64px; height: 64px; border-radius: 50%;
+        border: 2px dashed var(--c1);
+        background: rgba(255, 255, 255, 0.85);
+        display: flex; align-items: center; justify-content: center;
+        font-family: "Crimson Pro", serif;
+        font-size: 22px; font-weight: 700;
+        color: var(--c1);
+      }
+      .stamp.special {
+        background: var(--c1); border-color: var(--c1); color: var(--c2);
+      }
+      .stamp.special svg { width: 56%; height: 56%; }
+
+      /* === VERSO === */
+      .verso-title {
+        position: absolute; right: 60px; top: 60px;
+        font-family: "Crimson Pro", serif;
+        font-size: 36px; font-weight: 600;
+        letter-spacing: 0.18em;
+        color: var(--c1);
+        text-transform: uppercase;
+        z-index: 1;
+      }
+      .verso-conditions {
+        position: absolute; right: 60px; top: 130px;
+        max-width: 460px;
+        font-family: "Inter", sans-serif;
+        font-size: 17px; font-weight: 500;
+        line-height: 1.55;
+        color: var(--c1);
+        opacity: 0.85;
+        text-align: right;
+        z-index: 1;
+      }
+      .verso-lines {
+        position: absolute; right: 60px; bottom: 60px;
+        display: flex; flex-direction: column; gap: 14px;
+        align-items: flex-end;
+        z-index: 1;
+      }
+      .verso-lines .line {
+        display: flex; align-items: center; gap: 14px;
+        font-family: "Inter", sans-serif;
+        font-size: 19px; font-weight: 600;
+        color: var(--c1);
+      }
+      .verso-lines .ic {
+        width: 38px; height: 38px;
+        border: 1.5px solid var(--c1);
+        border-radius: 4px;
+        display: flex; align-items: center; justify-content: center;
+        flex: 0 0 auto;
+      }
+      .verso-lines .ic svg { width: 20px; height: 20px; color: var(--c1); }
+
+      a { color: inherit; text-decoration: none; }
+    </style>
+  </head>
+  <body>
+    <table role="presentation" class="sheet"><tr><td valign="middle">
+      <div style="display: flex; gap: 60px; align-items: center;">
+
+        <!-- ============================ RECTO ============================ -->
+        <div class="card">
+          <div class="bg" aria-hidden="true">
+            <svg viewBox="0 0 1050 600" preserveAspectRatio="none">
+              <polygon points="1050,300 700,600 1050,600" fill="var(--c2-soft)"/>
+              <polygon points="1050,300 760,600 1050,600" fill="#ffffff"/>
+              <polygon points="1050,300 820,600 1050,600" fill="var(--c1)"/>
+              <polygon points="1050,300 700,0 1050,0" fill="var(--c2-soft)"/>
+              <polygon points="1050,300 760,0 1050,0" fill="#ffffff"/>
+              <polygon points="1050,300 820,0 1050,0" fill="var(--c1)"/>
+            </svg>
+          </div>
+
+          <div class="recto-name">{{ client.name }}</div>
+          {% if client.subtitle %}<div class="recto-tag">{{ client.subtitle }}</div>{% endif %}
+
+          <div class="recto-program">Carte de fidélité</div>
+          <div class="recto-sub">10 passages = 1 offert. Présentez cette carte à chaque visite pour faire tamponner une case.</div>
+
+          <div class="stamps">
+            {% for i in range(1, 10) %}
+              <div class="stamp">{{ i }}</div>
+            {% endfor %}
+            <div class="stamp special" aria-label="Récompense">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 .587l3.668 7.431 8.2 1.193-5.934 5.787 1.402 8.176L12 18.896l-7.336 3.868 1.402-8.176L.132 9.211l8.2-1.193z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================ VERSO ============================ -->
+        <div class="card">
+          <div class="bg" aria-hidden="true">
+            <svg viewBox="0 0 1050 600" preserveAspectRatio="none" style="transform: scaleX(-1);">
+              <polygon points="1050,300 700,600 1050,600" fill="var(--c2-soft)"/>
+              <polygon points="1050,300 760,600 1050,600" fill="#ffffff"/>
+              <polygon points="1050,300 820,600 1050,600" fill="var(--c1)"/>
+              <polygon points="1050,300 700,0 1050,0" fill="var(--c2-soft)"/>
+              <polygon points="1050,300 760,0 1050,0" fill="#ffffff"/>
+              <polygon points="1050,300 820,0 1050,0" fill="var(--c1)"/>
+            </svg>
+          </div>
+
+          <div class="verso-title">Conditions</div>
+          <div class="verso-conditions">
+            Carte nominative et non cumulable avec d'autres offres. Une seule case tamponnée par visite. Au bout de 10 passages, le 11ᵉ est offert.
+            {% if client.full_name %}<br/><br/><strong>Carte de :</strong> {{ client.full_name }}{% endif %}
+          </div>
+
+          <div class="verso-lines">
+            {% if client.address %}
+              <div class="line">
+                <span>{{ client.address }}</span>
+                <span class="ic" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13z"/>
+                    <circle cx="12" cy="9" r="2.5"/>
+                  </svg>
+                </span>
+              </div>
+            {% endif %}
+            {% if client.phone_primary_display %}
+              <div class="line">
+                <span>{{ client.phone_primary_display }}</span>
+                <span class="ic" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.86 19.86 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                  </svg>
+                </span>
+              </div>
+            {% endif %}
+            {% if client.website_url %}
+              <div class="line">
+                <span>{{ client.website_label or client.website_url }}</span>
+                <span class="ic" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9"/>
+                    <path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/>
+                  </svg>
+                </span>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+    </td></tr></table>
+  </body>
+</html>

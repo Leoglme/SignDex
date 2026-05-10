@@ -1,0 +1,205 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Carte de visite — v1 dégradé moderne</title>
+    <!--
+      Format imprimable : chaque carte = 1050×600 px (3.5"×2" @300dpi, standard VistaPrint).
+      Le rendu présente recto + verso côte à côte (gap 60 px) pour un livrable preview clair.
+    -->
+    <style>
+      :root {
+        --c1: {{ client.color_primary or '#4f46e5' }};
+        --c2: {{ client.color_secondary or '#0ea5e9' }};
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #eef2f7; }
+      table { border-collapse: collapse; }
+      .sheet {
+        width: 2160px; height: 620px; padding: 10px 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+        background: transparent;
+        display: flex; gap: 60px; align-items: center; justify-content: center;
+      }
+      .card {
+        width: 1050px; height: 600px;
+        border-radius: 28px; overflow: hidden;
+        box-shadow: 0 22px 60px rgba(15,23,42,0.18);
+        position: relative;
+      }
+      /* RECTO */
+      .recto {
+        background:
+          radial-gradient(900px 600px at 100% 100%, rgba(255,255,255,0.18), rgba(255,255,255,0) 60%),
+          linear-gradient(135deg, var(--c1) 0%, var(--c2) 100%);
+        color: #fff;
+        padding: 64px 70px;
+        display: flex; flex-direction: column; justify-content: space-between;
+      }
+      /* Recto : entreprise en grand (pas le prénom/nom) */
+      .recto .name { font-size: 64px; font-weight: 900; line-height: 1.02; letter-spacing: -0.02em; }
+      .recto .role { margin-top: 14px; font-size: 22px; opacity: .92; font-weight: 500; }
+      .recto-bottom { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+      .recto .website {
+        display: inline-flex; align-items: center; gap: 10px;
+        padding: 12px 18px; border-radius: 999px;
+        background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.32);
+        font-weight: 700; font-size: 18px;
+      }
+      /* Pastille logo : fond = couleur 1 (--c1). Après « Échanger 1↔2 », --c1 devient l’autre teinte → logo blanc lisible sur fond bleu par ex. */
+      .logo {
+        width: 124px;
+        min-height: 72px;
+        height: auto;
+        max-height: 110px;
+        border-radius: 10px;
+        overflow: hidden;
+        background: var(--c1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        flex: 0 0 auto;
+        padding: 10px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .logo img { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+      /* VERSO */
+      .verso {
+        background: #ffffff;
+        color: #0f172a;
+        padding: 60px 64px;
+        display: flex; flex-direction: column; justify-content: space-between;
+        border: 1px solid #e2e8f0;
+      }
+      .verso .bar {
+        height: 8px; width: 96px; border-radius: 999px;
+        background: linear-gradient(90deg, var(--c1), var(--c2));
+      }
+      .verso .head { display: flex; align-items: center; gap: 18px; justify-content: space-between; }
+      .verso .who .nm { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.1; }
+      .verso .who .co { margin-top: 6px; font-size: 17px; font-weight: 700; color: var(--c1); letter-spacing: .06em; text-transform: uppercase; }
+      .verso .who .ro { margin-top: 6px; color: #64748b; font-size: 15px; }
+      .verso .logo-mini {
+        width: 90px;
+        min-height: 48px;
+        height: auto;
+        max-height: 80px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: var(--c1);
+        border: 1px solid rgba(15, 23, 42, 0.1);
+        flex: 0 0 auto;
+        padding: 6px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .verso .logo-mini img { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+      .lines { display: flex; flex-direction: column; gap: 16px; }
+      .line { display: flex; align-items: center; gap: 16px; font-size: 18px; line-height: 1.2; color: #0f172a; }
+      /* Icônes type fidélité v4 : cadre bordure + pictos stroke */
+      .line .ic {
+        width: 38px; height: 38px;
+        border: 1.5px solid var(--c1);
+        border-radius: 4px;
+        background: transparent;
+        display: flex; align-items: center; justify-content: center;
+        flex: 0 0 auto;
+      }
+      .line .ic svg { width: 20px; height: 20px; color: var(--c1); }
+      .line .v { font-weight: 600; }
+      a { color: inherit; text-decoration: none; }
+    </style>
+  </head>
+  <body>
+    <table role="presentation" class="sheet"><tr><td valign="middle">
+      <div style="display: flex; gap: 60px; align-items: center;">
+
+        <!-- RECTO -->
+        <div class="card recto">
+          <div>
+            <div class="name">{{ client.name }}</div>
+            <div class="role">{{ client.subtitle or '' }}</div>
+          </div>
+          <div class="recto-bottom">
+            <div class="website">{{ client.website_label or client.website_url or '' }}</div>
+            <div class="logo">{% if client.logo_url %}<img src="{{ client.logo_url }}" alt="" />{% endif %}</div>
+          </div>
+        </div>
+
+        <!-- VERSO -->
+        <div class="card verso">
+          <div>
+            <div class="head">
+              <div class="who">
+                <div class="bar"></div>
+                <div class="nm" style="margin-top: 14px;">{% if client.full_name %}{{ client.full_name }}{% else %}{{ client.name }}{% endif %}</div>
+                {% if client.full_name %}<div class="co">{{ client.name }}</div>{% endif %}
+                <div class="ro">{{ client.subtitle or '' }}</div>
+              </div>
+              <div class="logo-mini">{% if client.logo_url %}<img src="{{ client.logo_url }}" alt="" />{% endif %}</div>
+            </div>
+          </div>
+          <div class="lines">
+            {% if client.email %}
+              <div class="line">
+                <div class="ic" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2"/>
+                    <path d="m22 7-10 6L2 7"/>
+                  </svg>
+                </div>
+                <div class="v">{{ client.email }}</div>
+              </div>
+            {% endif %}
+            {% if client.phone_primary_display %}
+              <div class="line">
+                <div class="ic" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.86 19.86 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                  </svg>
+                </div>
+                <div class="v">{{ client.phone_primary_display }}</div>
+              </div>
+            {% endif %}
+            {% if client.website_url %}
+              <div class="line">
+                <div class="ic" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9"/>
+                    <path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/>
+                  </svg>
+                </div>
+                <div class="v">{{ client.website_label or client.website_url }}</div>
+              </div>
+            {% endif %}
+            {% if client.address %}
+              <div class="line">
+                <div class="ic" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13z"/>
+                    <circle cx="12" cy="9" r="2.5"/>
+                  </svg>
+                </div>
+                <div class="v">{{ client.address }}</div>
+              </div>
+            {% endif %}
+            {% if client.linkedin_url %}
+              <div class="line">
+                <div class="ic" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                    <rect x="2" y="9" width="4" height="12"/>
+                    <circle cx="4" cy="4" r="2"/>
+                  </svg>
+                </div>
+                <div class="v"><a href="{{ client.linkedin_url }}">{{ client.linkedin_slug or client.linkedin_url }}</a></div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+    </td></tr></table>
+  </body>
+</html>

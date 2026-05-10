@@ -1,0 +1,231 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Carte de visite — v4 vagues navy & serif</title>
+    <!--
+      Reproduction fidèle de la maquette Pencil "Himson Palod / Abhishek Sharma" (node ULj2P).
+      Format imprimable : carte = 1050×600 (3.5"×2" @300dpi). Sheet = 2160×620 (recto + verso, gap 60).
+      Chaque carte rend 6 triangles diagonaux (3 bas + 3 haut, en miroir vertical) qui forment
+      un ">" couleur navy/blanc/bleu. Le texte est positionné en absolu par-dessus.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600;700&family=Inter:wght@500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --c1: {{ client.color_primary or '#001a59' }};
+        --c2: {{ client.color_secondary or '#3267e7' }};
+        --c2-soft: rgba(50, 103, 231, 0.8);
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #eef2f7; }
+      table { border-collapse: collapse; }
+      .sheet {
+        width: 2160px; height: 620px; padding: 10px 0;
+        font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+        display: flex; gap: 60px; align-items: center; justify-content: center;
+      }
+      .card {
+        width: 1050px; height: 600px;
+        background: #ffffff;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 22px 60px rgba(15, 23, 42, 0.18);
+        border: 1px solid #e2e8f0;
+      }
+      .card .bg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+      .card .bg svg { display: block; width: 100%; height: 100%; }
+
+      /* === RECTO : Himson Palod (entreprise) === */
+      .recto-name {
+        position: absolute; left: 60px; top: 198px;
+        font-family: "Crimson Pro", serif;
+        font-size: 60px; font-weight: 600;
+        letter-spacing: 0.04em;
+        color: var(--c1);
+        text-transform: uppercase;
+        line-height: 1;
+        z-index: 1;
+        white-space: nowrap;
+      }
+      .recto-tag {
+        position: absolute; left: 60px; top: 282px;
+        font-family: "Crimson Pro", serif;
+        font-size: 24px; font-weight: 400;
+        letter-spacing: 0.30em;
+        color: var(--c1);
+        text-transform: lowercase;
+        line-height: 1.4;
+        z-index: 1;
+      }
+      .recto-foot {
+        position: absolute; left: 60px; bottom: 60px;
+        display: flex; align-items: center; gap: 14px;
+        z-index: 1;
+      }
+      .recto-foot .ic {
+        width: 44px; height: 44px;
+        border: 1.5px solid var(--c1);
+        border-radius: 4px;
+        display: flex; align-items: center; justify-content: center;
+        flex: 0 0 auto;
+      }
+      .recto-foot .ic svg { width: 22px; height: 22px; color: var(--c1); }
+      .recto-foot .v {
+        font-family: "Crimson Pro", serif;
+        font-size: 22px; font-weight: 600;
+        letter-spacing: 0.10em;
+        color: var(--c1);
+      }
+
+      /* === VERSO : Abhishek Sharma (personne) — vagues à gauche, texte à droite === */
+      .verso-name {
+        position: absolute; right: 60px; top: 96px;
+        font-family: "Crimson Pro", serif;
+        font-size: 48px; font-weight: 600;
+        letter-spacing: 0.05em;
+        color: var(--c1);
+        line-height: 1;
+        z-index: 1;
+        text-align: right;
+        white-space: nowrap;
+      }
+      .verso-role {
+        position: absolute; right: 60px; top: 162px;
+        font-family: "Crimson Pro", serif;
+        font-size: 28px; font-weight: 500;
+        letter-spacing: 0.20em;
+        color: var(--c1);
+        text-transform: uppercase;
+        line-height: 1;
+        z-index: 1;
+        text-align: right;
+      }
+      .verso-lines {
+        position: absolute; right: 60px; top: 240px;
+        display: flex; flex-direction: column; gap: 14px;
+        z-index: 1;
+        align-items: flex-end;
+      }
+      .verso-lines .line {
+        display: flex; align-items: center; gap: 16px;
+        font-family: "Inter", sans-serif;
+        font-size: 22px; font-weight: 600;
+        letter-spacing: 0.10em;
+        color: var(--c1);
+      }
+      .verso-lines .ic {
+        width: 44px; height: 44px;
+        border: 1.5px solid var(--c1);
+        border-radius: 4px;
+        display: flex; align-items: center; justify-content: center;
+        flex: 0 0 auto;
+      }
+      .verso-lines .ic svg { width: 22px; height: 22px; color: var(--c1); }
+
+      a { color: inherit; text-decoration: none; }
+    </style>
+  </head>
+  <body>
+    <table role="presentation" class="sheet"><tr><td valign="middle">
+      <div style="display: flex; gap: 60px; align-items: center;">
+
+        <!-- ============================ RECTO (entreprise) — vagues à droite ============================ -->
+        <div class="card">
+          <div class="bg" aria-hidden="true">
+            <svg viewBox="0 0 1050 600" preserveAspectRatio="none">
+              <!-- BAS (3 triangles depuis le coin haut-droit, descendant en biais vers le sommet milieu-droit) -->
+              <polygon points="1050,300 573,600 1050,600" fill="var(--c2-soft)"/>
+              <polygon points="1050,300 642,600 1050,600" fill="#ffffff"/>
+              <polygon points="1050,300 708,600 1050,600" fill="var(--c1)"/>
+              <!-- HAUT (miroir vertical : 3 triangles depuis le coin bas-droit, montant vers le sommet milieu-droit) -->
+              <polygon points="1050,300 573,0 1050,0" fill="var(--c2-soft)"/>
+              <polygon points="1050,300 642,0 1050,0" fill="#ffffff"/>
+              <polygon points="1050,300 708,0 1050,0" fill="var(--c1)"/>
+            </svg>
+          </div>
+
+          <div class="recto-name">{{ client.name }}</div>
+          {% if client.subtitle %}<div class="recto-tag">{{ client.subtitle }}</div>{% endif %}
+
+          {% if client.email %}
+            <div class="recto-foot">
+              <span class="ic" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="5" width="18" height="14" rx="2"/>
+                  <path d="m3 7 9 6 9-6"/>
+                </svg>
+              </span>
+              <span class="v">{{ client.email }}</span>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- ============================ VERSO (personne) — vagues à gauche (miroir) ============================ -->
+        <div class="card">
+          <div class="bg" aria-hidden="true">
+            <svg viewBox="0 0 1050 600" preserveAspectRatio="none" style="transform: scaleX(-1);">
+              <polygon points="1050,300 573,600 1050,600" fill="var(--c2-soft)"/>
+              <polygon points="1050,300 642,600 1050,600" fill="#ffffff"/>
+              <polygon points="1050,300 708,600 1050,600" fill="var(--c1)"/>
+              <polygon points="1050,300 573,0 1050,0" fill="var(--c2-soft)"/>
+              <polygon points="1050,300 642,0 1050,0" fill="#ffffff"/>
+              <polygon points="1050,300 708,0 1050,0" fill="var(--c1)"/>
+            </svg>
+          </div>
+
+          <div class="verso-name">{{ client.full_name or client.name }}</div>
+          {% if client.subtitle %}<div class="verso-role">{{ client.subtitle }}</div>{% endif %}
+
+          <div class="verso-lines">
+            {% if client.email %}
+              <div class="line">
+                <span>{{ client.email }}</span>
+                <span class="ic" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="5" width="18" height="14" rx="2"/>
+                    <path d="m3 7 9 6 9-6"/>
+                  </svg>
+                </span>
+              </div>
+            {% endif %}
+            {% if client.phone_primary_display %}
+              <div class="line">
+                <span>{{ client.phone_primary_display }}</span>
+                <span class="ic" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.86 19.86 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                  </svg>
+                </span>
+              </div>
+            {% endif %}
+            {% if client.address %}
+              <div class="line">
+                <span>{{ client.address }}</span>
+                <span class="ic" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13z"/>
+                    <circle cx="12" cy="9" r="2.5"/>
+                  </svg>
+                </span>
+              </div>
+            {% endif %}
+            {% if client.website_url %}
+              <div class="line">
+                <span>{{ client.website_label or client.website_url }}</span>
+                <span class="ic" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9"/>
+                    <path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/>
+                  </svg>
+                </span>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+    </td></tr></table>
+  </body>
+</html>

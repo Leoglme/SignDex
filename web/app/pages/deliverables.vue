@@ -131,7 +131,10 @@ async function attachAndRegenerate() {
 
     const client = await apiFetch<{ id: number; name: string }>(`/clients/${it.clientId}`)
     const base = useApiBase()
-    const res = await fetch(`${base}/clients/${it.clientId}/deliverable`, {
+    const service = it.service || 'signatures'
+    const url =
+      service === 'signatures' ? `${base}/clients/${it.clientId}/deliverable` : `${base}/services/${service}/clients/${it.clientId}/deliverable`
+    const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ variants }),
@@ -144,11 +147,12 @@ async function attachAndRegenerate() {
     const root = await ensureDeliverablesRoot()
     const ts = new Date().toISOString().replaceAll(':', '-')
     const safeName = client.name.replaceAll(' ', '_')
-    const filename = `signdex_${safeName}_${ts}.zip`
+    const filename = `signdex_${service}_${safeName}_${ts}.zip`
     const filePath = await join(root, filename)
     await writeFile(filePath, bytes)
 
     await appendDeliverableIndex({
+      service,
       clientId: it.clientId,
       clientName: client.name,
       createdAtIso: new Date().toISOString(),
@@ -187,7 +191,10 @@ async function regenerate(it: DeliverableIndexItem) {
     // Nom à jour (si l’utilisateur a modifié la fiche client après livraison).
     const client = await apiFetch<{ id: number; name: string }>(`/clients/${it.clientId}`)
     const base = useApiBase()
-    const res = await fetch(`${base}/clients/${it.clientId}/deliverable`, {
+    const service = it.service || 'signatures'
+    const url =
+      service === 'signatures' ? `${base}/clients/${it.clientId}/deliverable` : `${base}/services/${service}/clients/${it.clientId}/deliverable`
+    const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ variants: it.variants }),
@@ -200,11 +207,12 @@ async function regenerate(it: DeliverableIndexItem) {
     const root = await ensureDeliverablesRoot()
     const ts = new Date().toISOString().replaceAll(':', '-')
     const safeName = client.name.replaceAll(' ', '_')
-    const filename = `signdex_${safeName}_${ts}.zip`
+    const filename = `signdex_${service}_${safeName}_${ts}.zip`
     const filePath = await join(root, filename)
     await writeFile(filePath, bytes)
 
     await appendDeliverableIndex({
+      service,
       clientId: it.clientId,
       clientName: client.name,
       createdAtIso: new Date().toISOString(),

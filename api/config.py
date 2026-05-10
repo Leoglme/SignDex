@@ -17,6 +17,9 @@ class AppSettings(BaseSettings):
     supabase_api_key: str | None = None
     supabase_storage_bucket: str | None = "SignDex"
 
+    # Templates:
+    # - signatures: `${signdex_templates_dir}/` (comportement historique)
+    # - autres services: `${signdex_templates_dir}/{service}/`
     signdex_templates_dir: str = "templates"
 
     #: Si 1 (défaut), exécuter le seed initial uniquement quand la table `clients` est vide. Mettre 0 pour désactiver.

@@ -267,6 +267,10 @@ async function restartApp(): Promise<void> {
 }
 
 async function checkForUpdate(): Promise<void> {
+  /* En `tauri:dev`, la version embarquée est souvent < release GitHub → faux positif. */
+  if (import.meta.dev) {
+    return
+  }
   if (!import.meta.client || !isDesktopApp.value) {
     return
   }

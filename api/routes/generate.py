@@ -116,6 +116,8 @@ def generate_deliverable(
                 photo1_slot=v.photo1_slot,
                 photo2_slot=v.photo2_slot,
                 show_side_photo=v.show_side_photo,
+                color_primary=v.color_primary,
+                color_secondary=v.color_secondary,
             )
             rendered_html = render_signature_html(template_html=raw_template, client=client, overrides=overrides)
 

@@ -1,0 +1,282 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Carte de visite — v5 luxe navy & or</title>
+    <!--
+      Refonte fidèle de la maquette d'inspiration luxe : fond navy plein, croissant or à droite,
+      JOHN DOE en or + DESIGNER en blanc à gauche, contact en bas-gauche avec icônes carrées or filled,
+      logo + COMPANY NAME + TAG LINE centrés dans le croissant or.
+      Carte = 1050×600 (3.5"×2" @300dpi). Sheet = 2160×620 (recto + verso, gap 60).
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Roboto:wght@400;500;600&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --c1: {{ client.color_primary or '#1c2f56' }};
+        --c2: {{ client.color_secondary or '#dec364' }};
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #0f172a; }
+      table { border-collapse: collapse; }
+      .sheet {
+        width: 2160px; height: 620px; padding: 10px 0;
+        font-family: "Montserrat", "Inter", ui-sans-serif, system-ui, sans-serif;
+        display: flex; gap: 60px; align-items: center; justify-content: center;
+      }
+      .card {
+        width: 1050px; height: 600px;
+        border-radius: 32px; overflow: hidden;
+        position: relative;
+        box-shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
+      }
+      .card .bg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+      .card .bg svg { display: block; width: 100%; height: 100%; }
+
+      /* === RECTO : fond navy + croissant or à droite === */
+      .recto { background: var(--c1); }
+
+      /* Bloc nom + slogan : un seul absolute, le slogan suit le flux (pas de chevauchement si le nom passe sur 2 lignes) */
+      .recto-header {
+        position: absolute;
+        left: 70px;
+        top: 80px;
+        z-index: 1;
+        max-width: 480px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+      }
+      .recto-name {
+        font-family: "Montserrat", sans-serif;
+        font-size: 56px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        color: var(--c2);
+        text-transform: uppercase;
+        line-height: 1.05;
+        margin: 0;
+      }
+      .recto-role {
+        font-family: "Montserrat", sans-serif;
+        font-size: 18px;
+        font-weight: 500;
+        letter-spacing: 0.18em;
+        color: #ffffff;
+        text-transform: uppercase;
+        line-height: 1.35;
+        margin: 0;
+      }
+
+      /* Contact (Phone/Email/Address) — blanc avec icônes carrées or filled */
+      .recto-contact {
+        position: absolute; left: 70px; bottom: 70px;
+        z-index: 1;
+        display: flex; flex-direction: column; gap: 18px;
+      }
+      .recto-contact .row {
+        display: flex; align-items: center; gap: 16px;
+        font-family: "Roboto", sans-serif;
+        font-size: 20px; font-weight: 500;
+        color: #ffffff;
+        line-height: 1.2;
+      }
+      .recto-contact .ic {
+        width: 36px; height: 36px;
+        background: var(--c2);
+        border-radius: 4px;
+        display: flex; align-items: center; justify-content: center;
+        flex: 0 0 auto;
+      }
+      .recto-contact .ic svg { width: 20px; height: 20px; color: var(--c1); }
+
+      /* Brand centré dans le croissant or (à droite) */
+      .recto-brand {
+        position: absolute;
+        right: 80px; top: 50%; transform: translateY(-50%);
+        z-index: 1;
+        display: flex; flex-direction: column; align-items: center; gap: 14px;
+        width: 320px;
+      }
+      .recto-brand .logo {
+        width: 90px; height: 90px;
+        display: flex; align-items: center; justify-content: center;
+        overflow: hidden;
+      }
+      .recto-brand .logo img { width: 100%; height: 100%; object-fit: contain; }
+      /* Monogramme : fallback circulaire avec la 1ʳᵉ lettre du nom si pas de logo_url */
+      .monogram {
+        width: 90px; height: 90px;
+        border-radius: 50%;
+        border: 2px solid var(--c1);
+        display: flex; align-items: center; justify-content: center;
+        font-family: "Montserrat", sans-serif;
+        font-size: 38px; font-weight: 800;
+        color: var(--c1);
+        background: rgba(255, 255, 255, 0.12);
+      }
+      .recto-brand .company {
+        font-family: "Montserrat", sans-serif;
+        font-size: 40px; font-weight: 800;
+        letter-spacing: 0.10em;
+        color: rgba(255, 255, 255, 0.92);
+        text-transform: uppercase;
+        line-height: 1;
+        text-align: center;
+      }
+      .recto-brand .tag {
+        font-family: "Montserrat", sans-serif;
+        font-size: 14px; font-weight: 600;
+        letter-spacing: 0.36em;
+        color: var(--c1);
+        text-transform: uppercase;
+        line-height: 1;
+        text-align: center;
+      }
+
+      /* === VERSO : navy plein + 2 formes or aux coins === */
+      .verso { background: var(--c1); }
+      .verso-center {
+        position: absolute; inset: 0;
+        z-index: 1;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 18px;
+        padding: 80px;
+        text-align: center;
+      }
+      .verso-center .logo {
+        width: 130px; height: 130px;
+        display: flex; align-items: center; justify-content: center;
+        overflow: hidden;
+      }
+      .verso-center .logo img { width: 100%; height: 100%; object-fit: contain; }
+      .verso-center .monogram {
+        width: 130px; height: 130px;
+        border-radius: 50%;
+        border: 2px solid var(--c2);
+        display: flex; align-items: center; justify-content: center;
+        font-family: "Montserrat", sans-serif;
+        font-size: 56px; font-weight: 800;
+        color: var(--c2);
+        background: rgba(222, 195, 100, 0.08);
+      }
+      .verso-center .company {
+        font-family: "Montserrat", sans-serif;
+        font-size: 44px; font-weight: 800;
+        letter-spacing: 0.10em;
+        color: var(--c2);
+        text-transform: uppercase;
+      }
+      .verso-center .tag {
+        font-family: "Montserrat", sans-serif;
+        font-size: 16px; font-weight: 500;
+        letter-spacing: 0.36em;
+        color: var(--c2);
+        text-transform: uppercase;
+      }
+      a { color: inherit; text-decoration: none; }
+    </style>
+  </head>
+  <body>
+    <table role="presentation" class="sheet"><tr><td valign="middle">
+      <div style="display: flex; gap: 60px; align-items: center;">
+
+        <!-- ============================ RECTO ============================ -->
+        <div class="card recto">
+          <div class="bg" aria-hidden="true">
+            <!--
+              Croissant or à droite : courbe Bézier convexe vers la gauche au milieu (creux à x≈564),
+              partant de (798, 0) en haut et arrivant à (798, 600) en bas, fermé jusqu'au bord droit.
+            -->
+            <svg viewBox="0 0 1050 600" preserveAspectRatio="none">
+              <path
+                d="M 798 0 C 486 100, 486 500, 798 600 L 1050 600 L 1050 0 Z"
+                fill="var(--c2)"/>
+            </svg>
+          </div>
+
+          <div class="recto-header">
+            <div class="recto-name">{{ client.full_name or client.name }}</div>
+            {% if client.subtitle %}<div class="recto-role">{{ client.subtitle }}</div>{% endif %}
+          </div>
+
+          <div class="recto-contact">
+            {% if client.phone_primary_display %}
+              <div class="row">
+                <span class="ic" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57a1 1 0 0 0-1.02.24l-2.2 2.2a15.07 15.07 0 0 1-6.59-6.59l2.2-2.21a1 1 0 0 0 .25-1.02A11.36 11.36 0 0 1 8.5 4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1c0 9.39 7.61 17 17 17a1 1 0 0 0 1-1v-3.5a1 1 0 0 0-1-1z"/>
+                  </svg>
+                </span>
+                <span>{{ client.phone_primary_display }}</span>
+              </div>
+            {% endif %}
+            {% if client.email %}
+              <div class="row">
+                <span class="ic" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5z"/>
+                  </svg>
+                </span>
+                <span>{{ client.email }}</span>
+              </div>
+            {% endif %}
+            {% if client.address %}
+              <div class="row">
+                <span class="ic" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/>
+                  </svg>
+                </span>
+                <span>{{ client.address }}</span>
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="recto-brand">
+            {% if client.logo_url %}
+              <div class="logo"><img src="{{ client.logo_url }}" alt="" /></div>
+            {% else %}
+              <div class="monogram">{{ (client.name or '').strip()[:1] | upper or '·' }}</div>
+            {% endif %}
+            <div class="company">{{ client.name }}</div>
+            {% if client.subtitle %}<div class="tag">{{ client.subtitle }}</div>{% endif %}
+          </div>
+        </div>
+
+        <!-- ============================ VERSO ============================ -->
+        <div class="card verso">
+          <div class="bg" aria-hidden="true">
+            <!--
+              2 formes or aux coins (paths Pencil exacts scalés ×3.125 depuis 336×192) :
+              - 6RZnF (top-left, à 0,0)        : M0 0 l 50 0 l -23.5 23 l -26.5 27 l 0 -50 z
+              - d1Ofu (bottom-right, à 286,142): M24 26.5 l 26 -26.5 l 0 50 l -50 0 l 24 -23.5 z
+            -->
+            <svg viewBox="0 0 1050 600" preserveAspectRatio="none">
+              <path
+                d="M 0 0 l 156.25 0 l -73.4375 71.875 l -82.8125 84.375 l 0 -156.25 z"
+                fill="var(--c2)"/>
+              <path
+                d="M 75 82.8125 l 81.25 -82.8125 l 0 156.25 l -156.25 0 l 75 -73.4375 z"
+                fill="var(--c2)"
+                transform="translate(893.75, 443.75)"/>
+            </svg>
+          </div>
+
+          <div class="verso-center">
+            {% if client.logo_url %}
+              <div class="logo"><img src="{{ client.logo_url }}" alt="" /></div>
+            {% else %}
+              <div class="monogram">{{ (client.name or '').strip()[:1] | upper or '·' }}</div>
+            {% endif %}
+            <div class="company">{{ client.name }}</div>
+            {% if client.subtitle %}<div class="tag">{{ client.subtitle }}</div>{% endif %}
+          </div>
+        </div>
+
+      </div>
+    </td></tr></table>
+  </body>
+</html>

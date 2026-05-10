@@ -37,6 +37,8 @@ _INITIAL_ROWS: list[dict[str, object | None]] = [
     {
         "name": "Aihaht EDANH",
         "subtitle": "Fondatrice - RESPONYX",
+        "firstname": "Aihaht",
+        "lastname": "EDANH",
         "website_url": "https://www.responyx.fr",
         "email": "aihaht.edanh@responyx.fr",
         # Export phpMyAdmin : espaces à normaliser pour affichage téléphone FR

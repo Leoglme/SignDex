@@ -14,8 +14,14 @@ class Client(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
+    # `name` = en général le **nom d'entreprise** (company / brand). Reste unique pour identifier la fiche.
     name: Mapped[str] = mapped_column(String(255), unique=True)
     subtitle: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+    # Identité de la personne contact (facultatif). Permet de générer une signature avec un nom propre
+    # (Prénom Nom) tout en gardant `name` comme nom d'entreprise pour les autres supports (cartes, flyers…).
+    firstname: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    lastname: Mapped[str | None] = mapped_column(String(128), nullable=True)
 
     website_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     email: Mapped[str | None] = mapped_column(String(255), nullable=True)

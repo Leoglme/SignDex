@@ -2,6 +2,8 @@ import { appDataDir, join } from '@tauri-apps/api/path'
 import { readDir, writeFile, readFile, mkdir, exists } from '@tauri-apps/plugin-fs'
 
 export type DeliverableIndexItem = {
+  /** Service source: 'signatures' (historique) | 'flyer' | 'banners' | 'cards-visite' | 'cards-fidelite' */
+  service?: string
   clientId: number
   clientName: string
   createdAtIso: string

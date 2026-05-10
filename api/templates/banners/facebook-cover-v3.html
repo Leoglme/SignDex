@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Facebook cover — v3 photo premium</title>
+    <!-- Facebook page cover: 1640×624 px -->
+    <style>
+      :root {
+        --c1: {{ client.color_primary or '#0f172a' }};
+        --c2: {{ client.color_secondary or '#f59e0b' }};
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #0b1220; }
+      .b {
+        width: 1640px; height: 624px;
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+        position: relative; overflow: hidden; color: #fff;
+        background:
+          {% if client.photo1_url or client.photo2_url %}
+          linear-gradient(90deg, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.78) 38%, rgba(15,23,42,0.30) 70%, rgba(15,23,42,0) 100%),
+          url("{{ client.photo1_url or client.photo2_url }}")
+          {% else %}
+          radial-gradient(900px 600px at 100% 50%, rgba(245,158,11,0.18), rgba(245,158,11,0) 60%),
+          linear-gradient(135deg, var(--c1) 0%, #1e293b 100%)
+          {% endif %};
+        background-size: cover; background-position: center;
+      }
+      .glow {
+        position: absolute; left: -120px; top: -120px; width: 540px; height: 540px; border-radius: 999px;
+        background: radial-gradient(closest-side, rgba(245,158,11,0.35), rgba(245,158,11,0));
+      }
+      .grid {
+        position: relative; z-index: 1; height: 100%;
+        display: grid; grid-template-columns: 1fr auto;
+        align-items: center; padding: 80px 100px; gap: 56px;
+      }
+      .left { display: flex; flex-direction: column; gap: 14px; max-width: 940px; }
+      .accent { color: var(--c2); font-weight: 800; letter-spacing: .3em; text-transform: uppercase; font-size: 13px; }
+      .name { font-size: 76px; font-weight: 900; letter-spacing: -0.02em; line-height: 1; }
+      .sub { font-size: 22px; opacity: 0.94; max-width: 880px; line-height: 1.4; font-weight: 500; }
+      .row { margin-top: 16px; display: inline-flex; align-items: center; gap: 16px; align-self: flex-start; }
+      .cta {
+        background: var(--c2); color: #1f2937;
+        padding: 14px 22px; border-radius: 16px;
+        font-weight: 900; font-size: 17px;
+        box-shadow: 0 12px 30px rgba(245,158,11,0.32);
+      }
+      .meta { font-size: 16px; opacity: 0.9; font-weight: 600; }
+      .right { display: flex; align-items: center; gap: 24px; }
+      .vsep { width: 1px; height: 360px; background: linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,0.32) 25%, rgba(255,255,255,0.32) 75%, rgba(255,255,255,0)); }
+      .card { display: flex; flex-direction: column; gap: 12px; align-items: flex-end; text-align: right; }
+      .card .role { font-size: 13px; letter-spacing: .26em; text-transform: uppercase; color: var(--c2); font-weight: 800; }
+      .card .url { font-size: 22px; font-weight: 800; }
+      .card .info { font-size: 16px; opacity: 0.92; line-height: 1.5; font-weight: 600; }
+      .logo {
+        width: 160px; height: 160px; border-radius: 32px; overflow: hidden;
+        background: rgba(255,255,255,0.96); flex: 0 0 auto;
+        box-shadow: 0 16px 36px rgba(0,0,0,0.30);
+      }
+      .logo img { width: 100%; height: 100%; object-fit: contain; }
+    </style>
+  </head>
+  <body>
+    <div class="b">
+      <div class="glow"></div>
+      <div class="grid">
+        <div class="left">
+          <div class="accent">— {{ client.subtitle or 'Page officielle' }}</div>
+          <div class="name">{{ client.name }}</div>
+          <div class="sub">{{ client.subtitle or '' }}</div>
+          <div class="row">
+            <div class="cta">{{ client.website_label or client.website_url or 'Visiter le site' }}</div>
+            <div class="meta">
+              {% if client.email %}{{ client.email }}{% endif %}
+              {% if client.email and client.phone_primary_display %} · {% endif %}
+              {% if client.phone_primary_display %}{{ client.phone_primary_display }}{% endif %}
+            </div>
+          </div>
+        </div>
+        <div class="right">
+          <div class="vsep"></div>
+          <div class="card">
+            <div class="role">— Contact</div>
+            <div class="url">{{ client.website_label or client.website_url or '' }}</div>
+            <div class="info">
+              {% if client.email %}{{ client.email }}{% endif %}
+              {% if client.email and client.phone_primary_display %}<br/>{% endif %}
+              {% if client.phone_primary_display %}{{ client.phone_primary_display }}{% endif %}
+            </div>
+          </div>
+          <div class="logo">{% if client.logo_url %}<img src="{{ client.logo_url }}" alt="" />{% endif %}</div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

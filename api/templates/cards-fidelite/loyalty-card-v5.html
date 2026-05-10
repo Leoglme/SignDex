@@ -1,0 +1,280 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Carte de fidélité — v5 luxe navy & or</title>
+    <!--
+      Déclinaison fidélité du style luxe : fond navy + croissant or à droite.
+      Recto : nom + role à gauche en or/blanc, programme + 10 tampons centrés dans le croissant or à droite.
+      Verso : navy plein + 2 formes or aux coins, logo + nom + conditions centrés.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Roboto:wght@400;500;600&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --c1: {{ client.color_primary or '#1c2f56' }};
+        --c2: {{ client.color_secondary or '#dec364' }};
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #0f172a; }
+      table { border-collapse: collapse; }
+      .sheet {
+        width: 2160px; height: 620px; padding: 10px 0;
+        font-family: "Montserrat", "Inter", ui-sans-serif, system-ui, sans-serif;
+        display: flex; gap: 60px; align-items: center; justify-content: center;
+      }
+      .card {
+        width: 1050px; height: 600px;
+        border-radius: 32px; overflow: hidden;
+        position: relative;
+        box-shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
+      }
+      .card .bg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+      .card .bg svg { display: block; width: 100%; height: 100%; }
+
+      /* === RECTO === */
+      .recto { background: var(--c1); }
+
+      .recto-name {
+        position: absolute; left: 70px; top: 80px;
+        z-index: 1;
+        font-family: "Montserrat", sans-serif;
+        font-size: 44px; font-weight: 800;
+        letter-spacing: 0.04em;
+        color: var(--c2);
+        text-transform: uppercase;
+        line-height: 1.05;
+        max-width: 380px;
+      }
+      .recto-role {
+        position: absolute; left: 70px; top: 145px;
+        z-index: 1;
+        font-family: "Montserrat", sans-serif;
+        font-size: 18px; font-weight: 500;
+        letter-spacing: 0.36em;
+        color: #ffffff;
+        text-transform: uppercase;
+        max-width: 380px;
+      }
+      .recto-program-title {
+        position: absolute; left: 70px; top: 240px;
+        z-index: 1;
+        font-family: "Montserrat", sans-serif;
+        font-size: 22px; font-weight: 700;
+        letter-spacing: 0.28em;
+        color: var(--c2);
+        text-transform: uppercase;
+      }
+      .recto-program-sub {
+        position: absolute; left: 70px; top: 290px;
+        z-index: 1;
+        font-family: "Roboto", sans-serif;
+        font-size: 15px; font-weight: 500;
+        line-height: 1.55;
+        color: rgba(255, 255, 255, 0.78);
+        max-width: 380px;
+      }
+      .recto-foot {
+        position: absolute; left: 70px; bottom: 60px;
+        z-index: 1;
+        display: flex; align-items: center; gap: 12px;
+        font-family: "Roboto", sans-serif;
+        font-size: 14px; font-weight: 500;
+        color: rgba(255, 255, 255, 0.85);
+      }
+      .recto-foot .ic {
+        width: 26px; height: 26px;
+        background: var(--c2); border-radius: 4px;
+        display: flex; align-items: center; justify-content: center;
+        flex: 0 0 auto;
+      }
+      .recto-foot .ic svg { width: 16px; height: 16px; color: var(--c1); }
+
+      /* Tampons : grille 5×2 centrée dans le croissant or à droite */
+      .stamps {
+        position: absolute;
+        right: 80px; top: 50%; transform: translateY(-50%);
+        z-index: 1;
+        display: grid; grid-template-columns: repeat(5, 56px); grid-auto-rows: 56px;
+        gap: 12px;
+      }
+      .stamp {
+        width: 56px; height: 56px; border-radius: 12px;
+        border: 2px solid var(--c1);
+        background: rgba(28, 47, 86, 0.06);
+        display: flex; align-items: center; justify-content: center;
+        font-family: "Montserrat", sans-serif;
+        font-size: 22px; font-weight: 800;
+        color: var(--c1);
+      }
+      .stamp.special {
+        background: var(--c1); border-color: var(--c1); color: var(--c2);
+      }
+      .stamp.special svg { width: 56%; height: 56%; }
+
+      /* === VERSO === */
+      .verso { background: var(--c1); }
+      .verso-center {
+        position: absolute; inset: 0;
+        z-index: 1;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 18px; padding: 80px;
+        text-align: center;
+      }
+      .verso-center .logo {
+        width: 110px; height: 110px;
+        display: flex; align-items: center; justify-content: center;
+        overflow: hidden;
+      }
+      .verso-center .logo img { width: 100%; height: 100%; object-fit: contain; }
+      .verso-center .company {
+        font-family: "Montserrat", sans-serif;
+        font-size: 38px; font-weight: 800;
+        letter-spacing: 0.10em;
+        color: var(--c2);
+        text-transform: uppercase;
+      }
+      .verso-center .program {
+        font-family: "Montserrat", sans-serif;
+        font-size: 14px; font-weight: 600;
+        letter-spacing: 0.36em;
+        color: var(--c2);
+        text-transform: uppercase;
+      }
+      .verso-center .conditions {
+        font-family: "Roboto", sans-serif;
+        font-size: 14px; font-weight: 500;
+        line-height: 1.55;
+        color: rgba(255, 255, 255, 0.82);
+        max-width: 540px;
+      }
+      .verso-center .contact {
+        display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: center;
+        font-family: "Roboto", sans-serif;
+        font-size: 14px; font-weight: 500;
+        color: rgba(255, 255, 255, 0.92);
+        margin-top: 6px;
+      }
+      .verso-center .contact .row { display: flex; align-items: center; gap: 8px; }
+      .verso-center .contact .ic {
+        width: 22px; height: 22px; border-radius: 4px;
+        background: var(--c2);
+        display: flex; align-items: center; justify-content: center;
+      }
+      .verso-center .contact .ic svg { width: 14px; height: 14px; color: var(--c1); }
+    </style>
+  </head>
+  <body>
+    <table role="presentation" class="sheet"><tr><td valign="middle">
+      <div style="display: flex; gap: 60px; align-items: center;">
+
+        <!-- ============================ RECTO ============================ -->
+        <div class="card recto">
+          <div class="bg" aria-hidden="true">
+            <svg viewBox="0 0 1050 600" preserveAspectRatio="none">
+              <path
+                d="M 798 0 C 486 100, 486 500, 798 600 L 1050 600 L 1050 0 Z"
+                fill="var(--c2)"/>
+            </svg>
+          </div>
+
+          <div class="recto-name">{{ client.name }}</div>
+          {% if client.subtitle %}<div class="recto-role">{{ client.subtitle }}</div>{% endif %}
+
+          <div class="recto-program-title">Carte fidélité</div>
+          <div class="recto-program-sub">10 passages = 1 offert. Présentez cette carte à chaque visite pour faire tamponner une case.</div>
+
+          {% if client.phone_primary_display or client.email %}
+            <div class="recto-foot">
+              {% if client.phone_primary_display %}
+                <span class="ic" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57a1 1 0 0 0-1.02.24l-2.2 2.2a15.07 15.07 0 0 1-6.59-6.59l2.2-2.21a1 1 0 0 0 .25-1.02A11.36 11.36 0 0 1 8.5 4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1c0 9.39 7.61 17 17 17a1 1 0 0 0 1-1v-3.5a1 1 0 0 0-1-1z"/>
+                  </svg>
+                </span>
+                <span>{{ client.phone_primary_display }}</span>
+              {% else %}
+                <span class="ic" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5z"/>
+                  </svg>
+                </span>
+                <span>{{ client.email }}</span>
+              {% endif %}
+            </div>
+          {% endif %}
+
+          <div class="stamps">
+            {% for i in range(1, 10) %}
+              <div class="stamp">{{ i }}</div>
+            {% endfor %}
+            <div class="stamp special" aria-label="Récompense">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 .587l3.668 7.431 8.2 1.193-5.934 5.787 1.402 8.176L12 18.896l-7.336 3.868 1.402-8.176L.132 9.211l8.2-1.193z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================ VERSO ============================ -->
+        <div class="card verso">
+          <div class="bg" aria-hidden="true">
+            <svg viewBox="0 0 1050 600" preserveAspectRatio="none">
+              <path
+                d="M 0 0 l 156.25 0 l -73.4375 71.875 l -82.8125 84.375 l 0 -156.25 z"
+                fill="var(--c2)"/>
+              <path
+                d="M 75 82.8125 l 81.25 -82.8125 l 0 156.25 l -156.25 0 l 75 -73.4375 z"
+                fill="var(--c2)"
+                transform="translate(893.75, 443.75)"/>
+            </svg>
+          </div>
+
+          <div class="verso-center">
+            {% if client.logo_url %}<div class="logo"><img src="{{ client.logo_url }}" alt="" /></div>{% endif %}
+            <div class="company">{{ client.name }}</div>
+            {% if client.subtitle %}<div class="program">{{ client.subtitle }}</div>{% endif %}
+            <div class="conditions">
+              Carte nominative et non cumulable avec d'autres offres. Une case tamponnée par visite. Au bout de 10 passages, le 11ᵉ est offert.
+              {% if client.full_name %}<br/><br/>Carte de : <strong style="color: #fff;">{{ client.full_name }}</strong>{% endif %}
+            </div>
+            <div class="contact">
+              {% if client.phone_primary_display %}
+                <div class="row">
+                  <span class="ic" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57a1 1 0 0 0-1.02.24l-2.2 2.2a15.07 15.07 0 0 1-6.59-6.59l2.2-2.21a1 1 0 0 0 .25-1.02A11.36 11.36 0 0 1 8.5 4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1c0 9.39 7.61 17 17 17a1 1 0 0 0 1-1v-3.5a1 1 0 0 0-1-1z"/>
+                    </svg>
+                  </span>
+                  <span>{{ client.phone_primary_display }}</span>
+                </div>
+              {% endif %}
+              {% if client.address %}
+                <div class="row">
+                  <span class="ic" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/>
+                    </svg>
+                  </span>
+                  <span>{{ client.address }}</span>
+                </div>
+              {% endif %}
+              {% if client.website_url %}
+                <div class="row">
+                  <span class="ic" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm6.93 9h-2.95a15.65 15.65 0 0 0-1.38-5.56A8 8 0 0 1 18.93 11zM12 4.07c.83 0 2.45 1.27 3.16 6.93H8.84C9.55 5.34 11.17 4.07 12 4.07zM5.07 11A8 8 0 0 1 9.4 5.44 15.65 15.65 0 0 0 8.02 11zM5.07 13H8a15.65 15.65 0 0 0 1.38 5.56A8 8 0 0 1 5.07 13zM12 19.93c-.83 0-2.45-1.27-3.16-6.93h6.32c-.71 5.66-2.33 6.93-3.16 6.93zM14.6 18.56A15.65 15.65 0 0 0 15.98 13H18.93A8 8 0 0 1 14.6 18.56z"/>
+                    </svg>
+                  </span>
+                  <span>{{ client.website_label or client.website_url }}</span>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </td></tr></table>
+  </body>
+</html>

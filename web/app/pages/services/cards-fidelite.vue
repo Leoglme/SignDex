@@ -8,34 +8,35 @@ import { IMAGE_SLOT_SELECT_ITEMS, type ImageSlotSource } from '~/constants/image
 type Client = { id: number; name: string; color_primary: string | null; color_secondary: string | null }
 type Template = { key: string; title: string; filename: string }
 
-type DeliverableVariantRow = {
+type VariantRow = {
   id: string
   template_key: string
   swap_colors: boolean
   logo_slot: ImageSlotSource
   photo1_slot: ImageSlotSource
   photo2_slot: ImageSlotSource
-  show_side_photo: boolean
   color_primary: string
   color_secondary: string
 }
 
+const SERVICE_KEY = 'cards-fidelite'
+const SERVICE_TITLE = 'Cartes de fidélité'
+
 const clients = ref<Client[]>([])
 const templates = ref<Template[]>([])
-
 const selectedClientId = ref<number | null>(null)
 
-const deliverableVariants = ref<DeliverableVariantRow[]>([])
+const deliverableVariants = ref<VariantRow[]>([])
 const draftVariant = reactive({
   template_key: '',
   swap_colors: false,
   logo_slot: 'default' as ImageSlotSource,
   photo1_slot: 'default' as ImageSlotSource,
   photo2_slot: 'default' as ImageSlotSource,
-  show_side_photo: true,
   color_primary: '',
   color_secondary: '',
 })
+
 const previewIframeSrc = ref<string | null>(null)
 const previewLoading = ref(false)
 let previewSeq = 0
@@ -60,11 +61,7 @@ function templateTitle(key: string) {
   return templates.value.find((t) => t.key === key)?.title ?? key
 }
 
-const templateSelectItems = computed(() =>
-  templates.value.map((t) => ({ label: t.title, value: t.key })),
-)
-
-const draftIsSignatureV2 = computed(() => draftVariant.template_key === 'signature-v2')
+const templateSelectItems = computed(() => templates.value.map((t) => ({ label: t.title, value: t.key })))
 
 function schedulePreview() {
   if (previewDebounce) clearTimeout(previewDebounce)
@@ -74,7 +71,6 @@ function schedulePreview() {
   }, 200)
 }
 
-/** Sans client : GET placeholder API. Avec client : POST preview (brouillon). */
 async function loadPreview() {
   const templateKey = draftVariant.template_key || templates.value[0]?.key
   if (!templateKey) {
@@ -86,7 +82,6 @@ async function loadPreview() {
 
   const cid = selectedClientId.value
   const seq = ++previewSeq
-
   if (!cid) {
     previewLoading.value = false
     const prev = previewIframeSrc.value
@@ -105,11 +100,10 @@ async function loadPreview() {
       logo_slot: draftVariant.logo_slot,
       photo1_slot: draftVariant.photo1_slot,
       photo2_slot: draftVariant.photo2_slot,
-      show_side_photo: draftVariant.show_side_photo,
       color_primary: draftVariant.color_primary || null,
       color_secondary: draftVariant.color_secondary || null,
     }
-    const res = await fetch(`${base}/render/preview`, {
+    const res = await fetch(`${base}/services/${SERVICE_KEY}/render/preview`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -127,14 +121,6 @@ async function loadPreview() {
   }
 }
 
-const placeholderPreviewUrl = computed(() => {
-  if (selectedClientId.value) return null
-  const k = draftVariant.template_key || templates.value[0]?.key
-  if (!k) return null
-  const base = useApiBase()
-  return `${base}/render/${k}.html`
-})
-
 const selectedClient = computed(() => clients.value.find((c) => c.id === selectedClientId.value) ?? null)
 
 /** À chaque changement de client : on (re)remplit les couleurs draft avec celles du client (ou vide). */
@@ -148,7 +134,6 @@ watch(
 )
 
 watch(selectedClientId, () => schedulePreview())
-
 watch(draftVariant, () => schedulePreview(), { deep: true })
 
 onMounted(() => schedulePreview())
@@ -163,7 +148,7 @@ async function refresh() {
   error.value = null
   try {
     clients.value = await apiFetch<Client[]>('/clients')
-    templates.value = await apiFetch<Template[]>('/templates')
+    templates.value = await apiFetch<Template[]>(`/services/${SERVICE_KEY}/templates`)
     syncVariantsWithTemplates()
     schedulePreview()
   } catch (e: any) {
@@ -185,7 +170,6 @@ function pushDraftToDeliverable() {
     logo_slot: draftVariant.logo_slot,
     photo1_slot: draftVariant.photo1_slot,
     photo2_slot: draftVariant.photo2_slot,
-    show_side_photo: draftVariant.show_side_photo,
     color_primary: draftVariant.color_primary,
     color_secondary: draftVariant.color_secondary,
   })
@@ -195,19 +179,18 @@ function removeVariant(rowId: string) {
   deliverableVariants.value = deliverableVariants.value.filter((r) => r.id !== rowId)
 }
 
-function duplicateVariant(row: DeliverableVariantRow) {
+function duplicateVariant(row: VariantRow) {
   deliverableVariants.value.push({ ...row, id: crypto.randomUUID() })
 }
 
-function loadDraftFromRow(row: DeliverableVariantRow) {
+function loadDraftFromRow(row: VariantRow) {
   draftVariant.template_key = row.template_key
   draftVariant.swap_colors = row.swap_colors
   draftVariant.logo_slot = row.logo_slot
   draftVariant.photo1_slot = row.photo1_slot
   draftVariant.photo2_slot = row.photo2_slot
-  draftVariant.show_side_photo = row.show_side_photo ?? true
-  draftVariant.color_primary = row.color_primary ?? ''
-  draftVariant.color_secondary = row.color_secondary ?? ''
+  draftVariant.color_primary = row.color_primary
+  draftVariant.color_secondary = row.color_secondary
   removeVariant(row.id)
 }
 
@@ -231,11 +214,10 @@ async function downloadDeliverable() {
       logo_slot: v.logo_slot,
       photo1_slot: v.photo1_slot,
       photo2_slot: v.photo2_slot,
-      show_side_photo: v.show_side_photo ?? true,
       color_primary: v.color_primary || null,
       color_secondary: v.color_secondary || null,
     }))
-    const res = await fetch(`${base}/clients/${selectedClientId.value}/deliverable`, {
+    const res = await fetch(`${base}/services/${SERVICE_KEY}/clients/${selectedClientId.value}/deliverable`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ variants }),
@@ -248,12 +230,12 @@ async function downloadDeliverable() {
     const root = await ensureDeliverablesRoot()
     const ts = new Date().toISOString().replaceAll(':', '-')
     const safeName = selectedClient.value.name.replaceAll(' ', '_')
-    const filename = `signdex_${safeName}_${ts}.zip`
+    const filename = `signdex_${SERVICE_KEY}_${safeName}_${ts}.zip`
     const filePath = await join(root, filename)
     await writeFile(filePath, bytes)
 
     await appendDeliverableIndex({
-      service: 'signatures',
+      service: SERVICE_KEY,
       clientId: selectedClient.value.id,
       clientName: selectedClient.value.name,
       createdAtIso: new Date().toISOString(),
@@ -272,22 +254,15 @@ async function downloadDeliverable() {
 </script>
 
 <template>
-  <UDashboardPanel id="templates">
+  <UDashboardPanel :id="`service-${SERVICE_KEY}`">
     <template #header>
-      <UDashboardNavbar title="Templates">
+      <UDashboardNavbar :title="SERVICE_TITLE">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
         <template #right>
           <div class="flex items-center gap-2">
-            <UButton
-              icon="i-lucide-download"
-              color="primary"
-              variant="solid"
-              :loading="generating"
-              :disabled="!selectedClientId"
-              @click="downloadDeliverable"
-            >
+            <UButton icon="i-lucide-download" color="primary" variant="solid" :loading="generating" :disabled="!selectedClientId" @click="downloadDeliverable">
               Télécharger le livrable
             </UButton>
             <UButton to="/deliverables" color="neutral" variant="ghost" icon="i-lucide-package" />
@@ -309,33 +284,18 @@ async function downloadDeliverable() {
               </template>
 
               <div class="min-w-0 space-y-3">
-                <UFormField label="Données injectées dans les templates" class="w-full min-w-0">
+                <UFormField label="Données injectées dans le template" class="w-full min-w-0">
                   <USelect
                     v-model="selectedClientId"
                     class="w-full"
-                    :items="[
-                      { label: '— Aucun (placeholder HTML)', value: null },
-                      ...clients.map((c) => ({ label: c.name, value: c.id })),
-                    ]"
+                    :items="[{ label: '— Sélectionne un client —', value: null }, ...clients.map((c) => ({ label: c.name, value: c.id }))]"
                     :ui="{
                       base: 'w-full',
                       content: 'z-[300] max-h-72 w-(--reka-select-trigger-width)',
                     }"
                   />
                 </UFormField>
-
-                <p class="text-muted text-xs leading-relaxed">
-                  <template v-if="!selectedClientId">
-                    Aperçu sans client : rendu <strong>placeholder</strong> (pas d’overrides couleur / images).
-                  </template>
-                  <template v-else>
-                    Aperçu et ZIP utilisent la fiche client ; le livrable et l’aperçu sont sous les colonnes Client et Édition.
-                  </template>
-                </p>
-
-                <p class="text-muted text-xs">
-                  Le fichier ZIP nécessite un <strong>client réel</strong>.
-                </p>
+                <p class="text-muted text-xs leading-relaxed">Format carte de fidélité standard : 3,5"×2" (1050×600 @300dpi), imprimable VistaPrint. Recto = visuel + nom, verso = grille de tampons.</p>
               </div>
             </UCard>
 
@@ -365,36 +325,16 @@ async function downloadDeliverable() {
               />
               <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
                 <UCheckbox v-model="draftVariant.swap_colors" label="Échanger couleurs 1 ↔ 2" />
-                <UCheckbox
-                  v-if="draftIsSignatureV2"
-                  v-model="draftVariant.show_side_photo"
-                  label="Afficher la vignette à droite (photo 1)"
-                />
               </div>
               <div class="grid gap-3 sm:grid-cols-3">
-                <UFormField label="Logo affiché" description="Image utilisée à la place du logo du template.">
-                  <USelect
-                    v-model="draftVariant.logo_slot"
-                    class="w-full"
-                    :items="IMAGE_SLOT_SELECT_ITEMS"
-                    :ui="{ base: 'w-full', content: 'z-[300]' }"
-                  />
+                <UFormField label="Logo affiché">
+                  <USelect v-model="draftVariant.logo_slot" class="w-full" :items="IMAGE_SLOT_SELECT_ITEMS" :ui="{ base: 'w-full', content: 'z-[300]' }" />
                 </UFormField>
-                <UFormField label="Photo 1 affichée" description="Emplacement « photo 1 » dans la signature.">
-                  <USelect
-                    v-model="draftVariant.photo1_slot"
-                    class="w-full"
-                    :items="IMAGE_SLOT_SELECT_ITEMS"
-                    :ui="{ base: 'w-full', content: 'z-[300]' }"
-                  />
+                <UFormField label="Photo 1 affichée">
+                  <USelect v-model="draftVariant.photo1_slot" class="w-full" :items="IMAGE_SLOT_SELECT_ITEMS" :ui="{ base: 'w-full', content: 'z-[300]' }" />
                 </UFormField>
-                <UFormField label="Photo 2 affichée" description="Emplacement « photo 2 » dans la signature.">
-                  <USelect
-                    v-model="draftVariant.photo2_slot"
-                    class="w-full"
-                    :items="IMAGE_SLOT_SELECT_ITEMS"
-                    :ui="{ base: 'w-full', content: 'z-[300]' }"
-                  />
+                <UFormField label="Photo 2 affichée">
+                  <USelect v-model="draftVariant.photo2_slot" class="w-full" :items="IMAGE_SLOT_SELECT_ITEMS" :ui="{ base: 'w-full', content: 'z-[300]' }" />
                 </UFormField>
               </div>
               <div class="flex flex-wrap gap-2">
@@ -405,82 +345,40 @@ async function downloadDeliverable() {
 
           <UCard :ui="editorLivrableCardUi">
             <template #header>
-              <div class="flex min-w-0 flex-wrap items-center justify-between gap-2">
-                <div class="font-semibold">Livrable — aperçu</div>
-                <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-rotate-ccw" @click="resetDeliverableList">
-                  Tout réinitialiser
-                </UButton>
+              <div class="flex min-w-0 flex-col gap-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <div class="font-semibold">Livrable — aperçu</div>
+                  <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-rotate-ccw" @click="resetDeliverableList">
+                    Tout réinitialiser
+                  </UButton>
+                </div>
+                <p class="text-muted text-xs leading-relaxed">Liste des variantes et aperçu HTML selon la configuration dans Édition.</p>
               </div>
             </template>
 
             <div v-if="deliverableVariants.length" class="space-y-2">
-              <div class="text-muted text-xs font-medium uppercase tracking-wide">
-                Dans le livrable ({{ deliverableVariants.length }})
-              </div>
+              <div class="text-muted text-xs font-medium uppercase tracking-wide">Dans le livrable ({{ deliverableVariants.length }})</div>
               <ul class="flex flex-col gap-2">
-                <li
-                  v-for="row in deliverableVariants"
-                  :key="row.id"
-                  class="ring-default flex flex-wrap items-center gap-2 rounded-lg px-3 py-2 ring-1"
-                >
+                <li v-for="row in deliverableVariants" :key="row.id" class="ring-default flex flex-wrap items-center gap-2 rounded-lg px-3 py-2 ring-1">
                   <span class="min-w-0 flex-1 truncate text-sm font-medium">{{ templateTitle(row.template_key) }}</span>
                   <div class="flex shrink-0 gap-1">
-                    <UButton
-                      size="xs"
-                      color="neutral"
-                      variant="ghost"
-                      icon="i-lucide-pencil"
-                      title="Charger dans l’éditeur"
-                      @click="loadDraftFromRow(row)"
-                    />
-                    <UButton
-                      size="xs"
-                      color="neutral"
-                      variant="ghost"
-                      icon="i-lucide-copy"
-                      title="Dupliquer"
-                      @click="duplicateVariant(row)"
-                    />
-                    <UButton
-                      size="xs"
-                      color="neutral"
-                      variant="ghost"
-                      icon="i-lucide-trash-2"
-                      title="Retirer"
-                      @click="removeVariant(row.id)"
-                    />
+                    <UButton size="xs" color="neutral" variant="ghost" icon="i-lucide-pencil" title="Charger dans l’éditeur" @click="loadDraftFromRow(row)" />
+                    <UButton size="xs" color="neutral" variant="ghost" icon="i-lucide-copy" title="Dupliquer" @click="duplicateVariant(row)" />
+                    <UButton size="xs" color="neutral" variant="ghost" icon="i-lucide-trash-2" title="Retirer" @click="removeVariant(row.id)" />
                   </div>
                 </li>
               </ul>
             </div>
             <p v-else class="text-muted text-sm">Aucune variante dans le livrable pour l’instant.</p>
 
-            <p v-if="!selectedClientId" class="text-muted mt-4 text-sm">
-              Aperçu placeholder (sans client) selon le template choisi — sélectionne un client pour données / images réelles.
-            </p>
-            <p v-else-if="previewLoading" class="text-primary mt-4 text-sm">Mise à jour…</p>
+            <div class="text-muted mt-4 text-sm">
+              Aperçu HTML — même configuration que dans Édition.
+              <span v-if="previewLoading" class="text-primary ml-2">Mise à jour…</span>
+            </div>
 
             <div class="ring-default relative mt-4 overflow-hidden rounded-lg ring-1">
-              <iframe
-                v-if="selectedClientId && previewIframeSrc"
-                :src="previewIframeSrc"
-                class="h-[min(70vh,640px)] min-h-[420px] w-full bg-white"
-                referrerpolicy="no-referrer"
-              />
-              <div
-                v-else-if="selectedClientId && previewLoading"
-                class="text-muted flex h-[min(70vh,640px)] min-h-[420px] items-center justify-center bg-white text-sm"
-              >
-                Préparation de l’aperçu…
-              </div>
-              <iframe
-                v-else-if="placeholderPreviewUrl"
-                :key="placeholderPreviewUrl"
-                :src="placeholderPreviewUrl"
-                class="h-[min(70vh,640px)] min-h-[420px] w-full bg-white"
-                referrerpolicy="no-referrer"
-              />
-              <div v-else class="text-muted p-4 text-sm">Aucun template disponible.</div>
+              <iframe v-if="selectedClientId && previewIframeSrc" :src="previewIframeSrc" class="h-[min(70vh,760px)] min-h-[420px] w-full bg-white" referrerpolicy="no-referrer" />
+              <div v-else class="text-muted p-4 text-sm">Sélectionne un client et un template pour l’aperçu.</div>
             </div>
           </UCard>
         </div>

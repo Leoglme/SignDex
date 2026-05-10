@@ -56,11 +56,25 @@ def mark_applied(engine, filename: str) -> None:
         )
 
 
+def _sql_without_full_line_comments(raw: str) -> str:
+    """Retire les lignes entièrement en commentaire `-- …` avant le split sur `;`.
+
+    Sinon un `;` dans un commentaire (ex. prose « avant 10.0.2 ; sur … ») casse le fichier
+    en morceaux exécutés comme du SQL et provoque une erreur 1064.
+    """
+    out_lines: list[str] = []
+    for line in raw.splitlines():
+        if line.lstrip().startswith("--"):
+            continue
+        out_lines.append(line)
+    return "\n".join(out_lines)
+
+
 def apply_file(engine, path: Path) -> None:
     filename = path.name
     if is_applied(engine, filename):
         return
-    sql = path.read_text(encoding="utf-8")
+    sql = _sql_without_full_line_comments(path.read_text(encoding="utf-8"))
     logger.info("Applying migration %s", filename)
     with engine.begin() as conn:
         for statement in [s.strip() for s in sql.split(";") if s.strip()]:

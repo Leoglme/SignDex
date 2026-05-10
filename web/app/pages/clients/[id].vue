@@ -2,12 +2,15 @@
 import { join } from '@tauri-apps/api/path'
 import { writeFile } from '@tauri-apps/plugin-fs'
 import { appendDeliverableIndex, ensureDeliverablesRoot } from '~/composables/useDeliverables'
+import { editorClientFormGridCardUi, editorGridColCardUi, editorLivrableCardUi } from '~/constants/editorCardUi'
 import { IMAGE_SLOT_SELECT_ITEMS, type ImageSlotSource } from '~/constants/imageSlots'
 
 type Client = {
   id: number
   name: string
   subtitle?: string | null
+  firstname?: string | null
+  lastname?: string | null
   website_url?: string | null
   email?: string | null
   phone_primary?: string | null
@@ -36,6 +39,8 @@ type DeliverableVariantRow = {
   photo2_slot: ImageSlotSource
   /** Template moderne (signature-v2) : vignette à droite. */
   show_side_photo: boolean
+  color_primary: string
+  color_secondary: string
 }
 
 function emptyToNull(s: string): string | null {
@@ -46,6 +51,8 @@ function emptyToNull(s: string): string | null {
 function syncEditFromClient(c: Client) {
   editForm.name = c.name
   editForm.subtitle = c.subtitle ?? ''
+  editForm.firstname = c.firstname ?? ''
+  editForm.lastname = c.lastname ?? ''
   editForm.website_url = c.website_url ?? ''
   editForm.email = c.email ?? ''
   editForm.phone_primary = c.phone_primary ?? ''
@@ -76,6 +83,8 @@ const draftVariant = reactive({
   photo1_slot: 'default' as ImageSlotSource,
   photo2_slot: 'default' as ImageSlotSource,
   show_side_photo: true,
+  color_primary: '',
+  color_secondary: '',
 })
 const previewIframeSrc = ref<string | null>(null)
 const previewLoading = ref(false)
@@ -95,6 +104,8 @@ const photo2FileRef = ref<HTMLInputElement | null>(null)
 const editForm = reactive({
   name: '',
   subtitle: '',
+  firstname: '',
+  lastname: '',
   website_url: '',
   email: '',
   phone_primary: '',
@@ -160,6 +171,8 @@ async function loadPreview() {
       photo1_slot: draftVariant.photo1_slot,
       photo2_slot: draftVariant.photo2_slot,
       show_side_photo: draftVariant.show_side_photo,
+      color_primary: draftVariant.color_primary || null,
+      color_secondary: draftVariant.color_secondary || null,
     }
     const res = await fetch(`${base}/render/preview`, {
       method: 'POST',
@@ -182,6 +195,19 @@ async function loadPreview() {
 watch(
   () => client.value?.id,
   () => schedulePreview(),
+)
+
+/**
+ * Quand on change de client OU que la fiche client (Modifier le client → Enregistrer) change ses couleurs,
+ * on resynchronise les overrides du draft sur les couleurs courantes du client.
+ */
+watch(
+  () => [client.value?.id, client.value?.color_primary, client.value?.color_secondary] as const,
+  () => {
+    draftVariant.color_primary = client.value?.color_primary || ''
+    draftVariant.color_secondary = client.value?.color_secondary || ''
+  },
+  { immediate: true },
 )
 
 watch(draftVariant, () => schedulePreview(), { deep: true })
@@ -222,6 +248,8 @@ function pushDraftToDeliverable() {
     photo1_slot: draftVariant.photo1_slot,
     photo2_slot: draftVariant.photo2_slot,
     show_side_photo: draftVariant.show_side_photo,
+    color_primary: draftVariant.color_primary,
+    color_secondary: draftVariant.color_secondary,
   })
 }
 
@@ -241,6 +269,8 @@ function loadDraftFromRow(row: DeliverableVariantRow) {
   draftVariant.photo1_slot = row.photo1_slot
   draftVariant.photo2_slot = row.photo2_slot
   draftVariant.show_side_photo = row.show_side_photo ?? true
+  draftVariant.color_primary = row.color_primary ?? ''
+  draftVariant.color_secondary = row.color_secondary ?? ''
   removeVariant(row.id)
 }
 
@@ -252,6 +282,8 @@ function buildUpdatePayload() {
   return {
     name: editForm.name.trim(),
     subtitle: emptyToNull(editForm.subtitle),
+    firstname: emptyToNull(editForm.firstname),
+    lastname: emptyToNull(editForm.lastname),
     website_url: emptyToNull(editForm.website_url),
     email: emptyToNull(editForm.email),
     phone_primary: emptyToNull(editForm.phone_primary),
@@ -334,6 +366,8 @@ async function downloadDeliverable() {
       photo1_slot: v.photo1_slot,
       photo2_slot: v.photo2_slot,
       show_side_photo: v.show_side_photo ?? true,
+      color_primary: v.color_primary || null,
+      color_secondary: v.color_secondary || null,
     }))
     const res = await fetch(`${base}/clients/${client.value.id}/deliverable`, {
       method: 'POST',
@@ -353,6 +387,7 @@ async function downloadDeliverable() {
     await writeFile(filePath, bytes)
 
     await appendDeliverableIndex({
+      service: 'signatures',
       clientId: client.value.id,
       clientName: client.value.name,
       createdAtIso: new Date().toISOString(),
@@ -393,29 +428,35 @@ async function downloadDeliverable() {
     </template>
 
     <template #body>
-      <div class="space-y-4 p-4 sm:p-6">
+      <div class="space-y-4">
         <UAlert v-if="error" color="red" variant="soft" title="Erreur" :description="error" />
 
         <div v-if="loading" class="text-muted text-sm">Chargement…</div>
 
-        <div
-          v-else-if="client"
-          class="grid min-w-0 gap-4 lg:grid-cols-[minmax(16rem,26rem)_minmax(0,1fr)] xl:grid-cols-[minmax(18rem,28rem)_minmax(0,1fr)]"
-        >
-          <UCard class="min-w-0 self-start">
-            <template #header>
-              <div class="flex flex-wrap items-center justify-between gap-2">
-                <div class="font-semibold">Modifier le client</div>
-                <UButton color="primary" size="sm" :loading="saving" :disabled="!editForm.name.trim()" @click="saveClient">
-                  Enregistrer
-                </UButton>
-              </div>
-            </template>
+        <div v-else-if="client" class="min-w-0 space-y-4">
+          <div
+            class="grid min-w-0 items-stretch gap-4 lg:grid-cols-[minmax(16rem,26rem)_minmax(0,1fr)] xl:grid-cols-[minmax(18rem,28rem)_minmax(0,1fr)]"
+          >
+            <UCard :ui="editorClientFormGridCardUi">
+              <template #header>
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <div class="font-semibold">Modifier le client</div>
+                  <UButton color="primary" size="sm" :loading="saving" :disabled="!editForm.name.trim()" @click="saveClient">
+                    Enregistrer
+                  </UButton>
+                </div>
+              </template>
 
-            <div class="max-h-[min(78vh,720px)] space-y-6 overflow-y-auto">
+              <div class="min-h-0 flex-1 space-y-6 overflow-y-auto">
               <div class="grid min-w-0 gap-3 sm:grid-cols-2">
-                <UFormField label="Nom" class="min-w-0 sm:col-span-2">
+                <UFormField label="Nom de l'entreprise" hint="Sert d'identifiant et de marque." class="min-w-0 sm:col-span-2">
                   <UInput v-model="editForm.name" class="w-full" />
+                </UFormField>
+                <UFormField label="Prénom (contact)" class="min-w-0">
+                  <UInput v-model="editForm.firstname" class="w-full" />
+                </UFormField>
+                <UFormField label="Nom (contact)" class="min-w-0">
+                  <UInput v-model="editForm.lastname" class="w-full" />
                 </UFormField>
                 <UFormField label="Sous-titre / slogan" class="min-w-0 sm:col-span-2">
                   <UInput v-model="editForm.subtitle" class="w-full" />
@@ -575,27 +616,14 @@ async function downloadDeliverable() {
                   </div>
                 </div>
               </div>
-            </div>
-          </UCard>
-
-          <UCard class="min-w-0">
-            <template #header>
-              <div class="flex min-w-0 flex-col gap-3">
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                  <div class="font-semibold">Livrable — aperçu</div>
-                  <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-rotate-ccw" @click="resetDeliverableList">
-                    Tout réinitialiser
-                  </UButton>
-                </div>
-                <p class="text-muted text-xs leading-relaxed">
-                  Choisis un template, règle les options puis ajoute au livrable. L’aperçu correspond toujours à cette
-                  configuration. Les lignes du livrable déterminent le contenu du ZIP (doublons → noms _variant-2, …).
-                </p>
               </div>
-            </template>
+            </UCard>
 
-            <div class="ring-default space-y-4 rounded-lg p-4 ring-1">
-              <div class="text-muted text-xs font-medium uppercase tracking-wide">Édition</div>
+            <UCard :ui="editorGridColCardUi">
+              <template #header>
+                <div class="font-semibold">Édition</div>
+              </template>
+
               <UFormField label="Template" class="min-w-0">
                 <USelect
                   v-model="draftVariant.template_key"
@@ -608,6 +636,12 @@ async function downloadDeliverable() {
                   }"
                 />
               </UFormField>
+              <SignDexColorOverrideFields
+                v-model:color1="draftVariant.color_primary"
+                v-model:color2="draftVariant.color_secondary"
+                :default-color1="client?.color_primary || null"
+                :default-color2="client?.color_secondary || null"
+              />
               <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
                 <UCheckbox v-model="draftVariant.swap_colors" label="Échanger couleurs 1 ↔ 2" />
                 <UCheckbox
@@ -645,9 +679,25 @@ async function downloadDeliverable() {
               <div class="flex flex-wrap gap-2">
                 <UButton color="primary" icon="i-lucide-plus" @click="pushDraftToDeliverable">Ajouter au livrable</UButton>
               </div>
-            </div>
+            </UCard>
+          </div>
 
-            <div v-if="deliverableVariants.length" class="mt-4 space-y-2">
+          <UCard :ui="editorLivrableCardUi">
+            <template #header>
+              <div class="flex min-w-0 flex-col gap-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <div class="font-semibold">Livrable — aperçu</div>
+                  <UButton size="xs" color="neutral" variant="soft" icon="i-lucide-rotate-ccw" @click="resetDeliverableList">
+                    Tout réinitialiser
+                  </UButton>
+                </div>
+                <p class="text-muted text-xs leading-relaxed">
+                  Liste des variantes dans le ZIP et aperçu HTML selon la configuration dans Édition (doublons → noms _variant-2, …).
+                </p>
+              </div>
+            </template>
+
+            <div v-if="deliverableVariants.length" class="space-y-2">
               <div class="text-muted text-xs font-medium uppercase tracking-wide">
                 Dans le livrable ({{ deliverableVariants.length }})
               </div>
@@ -687,10 +737,10 @@ async function downloadDeliverable() {
                 </li>
               </ul>
             </div>
-            <p v-else class="text-muted mt-4 text-sm">Aucune variante dans le livrable pour l’instant.</p>
+            <p v-else class="text-muted text-sm">Aucune variante dans le livrable pour l’instant.</p>
 
             <div class="text-muted mt-4 text-sm">
-              Aperçu HTML (configuration ci-dessus).
+              Aperçu HTML — même configuration que dans Édition.
               <span v-if="previewLoading" class="text-primary ml-2">Mise à jour…</span>
             </div>
 

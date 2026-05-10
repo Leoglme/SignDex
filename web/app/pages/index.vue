@@ -3,6 +3,8 @@ type Client = {
   id: number
   name: string
   subtitle?: string | null
+  firstname?: string | null
+  lastname?: string | null
   website_url?: string | null
   email?: string | null
   phone_primary?: string | null
@@ -33,6 +35,8 @@ function emptyToNull(s: string): string | null {
 const newClient = reactive({
   name: '',
   subtitle: '',
+  firstname: '',
+  lastname: '',
   website_url: '',
   email: '',
   phone_primary: '',
@@ -72,6 +76,8 @@ async function createClient() {
       body: JSON.stringify({
         name: newClient.name.trim(),
         subtitle: emptyToNull(newClient.subtitle),
+        firstname: emptyToNull(newClient.firstname),
+        lastname: emptyToNull(newClient.lastname),
         website_url: emptyToNull(newClient.website_url),
         email: emptyToNull(newClient.email),
         phone_primary: emptyToNull(newClient.phone_primary),
@@ -93,6 +99,8 @@ async function createClient() {
     Object.assign(newClient, {
       name: '',
       subtitle: '',
+      firstname: '',
+      lastname: '',
       website_url: '',
       email: '',
       phone_primary: '',
@@ -154,10 +162,16 @@ await refresh()
           <template #body>
             <div class="max-h-[min(72vh,560px)] overflow-y-auto">
               <div class="grid min-w-0 gap-4 sm:grid-cols-2">
-                <UFormField label="Nom" class="min-w-0">
+                <UFormField label="Nom de l'entreprise" hint="Sert d'identifiant et de marque sur les supports." class="min-w-0 sm:col-span-2">
                   <UInput v-model="newClient.name" class="w-full" placeholder="HelloPropre" />
                 </UFormField>
-                <UFormField label="Sous-titre / slogan" class="min-w-0">
+                <UFormField label="Prénom (contact)" class="min-w-0">
+                  <UInput v-model="newClient.firstname" class="w-full" placeholder="Aihaht" />
+                </UFormField>
+                <UFormField label="Nom (contact)" class="min-w-0">
+                  <UInput v-model="newClient.lastname" class="w-full" placeholder="EDANH" />
+                </UFormField>
+                <UFormField label="Sous-titre / slogan" class="min-w-0 sm:col-span-2">
                   <UInput v-model="newClient.subtitle" class="w-full" placeholder="Service de nettoyage professionnel" />
                 </UFormField>
                 <UFormField label="Site web" class="min-w-0">
@@ -231,7 +245,10 @@ await refresh()
                 <img v-if="c.logo_url" :src="c.logo_url" class="size-10 rounded bg-white object-contain" />
                 <div class="min-w-0">
                   <div class="truncate font-semibold">{{ c.name }}</div>
-                  <div class="text-muted truncate text-sm">{{ c.subtitle }}</div>
+                  <div v-if="c.firstname || c.lastname" class="text-muted truncate text-xs">
+                    {{ [c.firstname, c.lastname].filter(Boolean).join(' ') }}
+                  </div>
+                  <div v-if="c.subtitle" class="text-muted truncate text-sm">{{ c.subtitle }}</div>
                 </div>
               </div>
             </template>
