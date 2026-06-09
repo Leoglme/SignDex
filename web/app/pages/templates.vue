@@ -5,7 +5,8 @@ import { appendDeliverableIndex, ensureDeliverablesRoot } from '~/composables/us
 import { editorGridColCardUi, editorLivrableCardUi } from '~/constants/editorCardUi'
 import { IMAGE_SLOT_SELECT_ITEMS, type ImageSlotSource } from '~/constants/imageSlots'
 
-type Client = { id: number; name: string; color_primary: string | null; color_secondary: string | null }
+type ClientListItem = { id: number; name: string; color_primary: string | null; color_secondary: string | null }
+type ClientDetail = ClientListItem & { title?: string | null; subtitle?: string | null }
 type Template = { key: string; title: string; filename: string }
 
 type DeliverableVariantRow = {
@@ -16,11 +17,18 @@ type DeliverableVariantRow = {
   photo1_slot: ImageSlotSource
   photo2_slot: ImageSlotSource
   show_side_photo: boolean
+  show_right_logo: boolean
+  show_notes: boolean
   color_primary: string
   color_secondary: string
+  /** Figé à l’ajout au livrable (titre / sous-titre de l’éditeur). */
+  title: string
+  subtitle: string
 }
 
-const clients = ref<Client[]>([])
+const clients = ref<ClientListItem[]>([])
+const selectedClientDetail = ref<ClientDetail | null>(null)
+const signatureText = reactive({ title: '', subtitle: '' })
 const templates = ref<Template[]>([])
 
 const selectedClientId = ref<number | null>(null)
@@ -33,6 +41,8 @@ const draftVariant = reactive({
   photo1_slot: 'default' as ImageSlotSource,
   photo2_slot: 'default' as ImageSlotSource,
   show_side_photo: true,
+  show_right_logo: true,
+  show_notes: false,
   color_primary: '',
   color_secondary: '',
 })
@@ -65,6 +75,14 @@ const templateSelectItems = computed(() =>
 )
 
 const draftIsSignatureV2 = computed(() => draftVariant.template_key === 'signature-v2')
+const draftUsesDualVisualLayout = computed(() => {
+  const k = draftVariant.template_key
+  return k === 'signature-v6' || k === 'signature-v8'
+})
+const draftShowsNotesOption = computed(() => {
+  const k = draftVariant.template_key
+  return k === 'signature-v1' || k === 'signature-v2'
+})
 
 function schedulePreview() {
   if (previewDebounce) clearTimeout(previewDebounce)
@@ -106,6 +124,10 @@ async function loadPreview() {
       photo1_slot: draftVariant.photo1_slot,
       photo2_slot: draftVariant.photo2_slot,
       show_side_photo: draftVariant.show_side_photo,
+      show_right_logo: draftVariant.show_right_logo,
+      show_notes: draftVariant.show_notes,
+      ...(signatureText.title.trim() ? { title: signatureText.title.trim() } : {}),
+      ...(signatureText.subtitle.trim() ? { subtitle: signatureText.subtitle.trim() } : {}),
       color_primary: draftVariant.color_primary || null,
       color_secondary: draftVariant.color_secondary || null,
     }
@@ -137,7 +159,32 @@ const placeholderPreviewUrl = computed(() => {
 
 const selectedClient = computed(() => clients.value.find((c) => c.id === selectedClientId.value) ?? null)
 
-/** À chaque changement de client : on (re)remplit les couleurs draft avec celles du client (ou vide). */
+function syncSignatureTextFromClient(c: ClientDetail | null) {
+  if (!c) {
+    signatureText.title = ''
+    signatureText.subtitle = ''
+    return
+  }
+  signatureText.title = c.title?.trim() ?? ''
+  signatureText.subtitle = c.subtitle?.trim() ?? ''
+}
+
+async function loadSelectedClientDetail(id: number | null) {
+  if (!id) {
+    selectedClientDetail.value = null
+    syncSignatureTextFromClient(null)
+    return
+  }
+  try {
+    const c = await apiFetch<ClientDetail>(`/clients/${id}`)
+    selectedClientDetail.value = c
+    syncSignatureTextFromClient(c)
+  } catch (e: any) {
+    error.value = e?.message || String(e)
+  }
+}
+
+/** À chaque changement de client : couleurs draft + fiche complète (titre / sous-titre). */
 watch(
   selectedClient,
   (c) => {
@@ -147,7 +194,15 @@ watch(
   { immediate: true },
 )
 
-watch(selectedClientId, () => schedulePreview())
+watch(selectedClientId, (id) => {
+  loadSelectedClientDetail(id)
+  schedulePreview()
+})
+
+watch(
+  () => [signatureText.title, signatureText.subtitle] as const,
+  () => schedulePreview(),
+)
 
 watch(draftVariant, () => schedulePreview(), { deep: true })
 
@@ -162,7 +217,8 @@ async function refresh() {
   loading.value = true
   error.value = null
   try {
-    clients.value = await apiFetch<Client[]>('/clients')
+    clients.value = await apiFetch<ClientListItem[]>('/clients')
+    if (selectedClientId.value) await loadSelectedClientDetail(selectedClientId.value)
     templates.value = await apiFetch<Template[]>('/templates')
     syncVariantsWithTemplates()
     schedulePreview()
@@ -186,8 +242,12 @@ function pushDraftToDeliverable() {
     photo1_slot: draftVariant.photo1_slot,
     photo2_slot: draftVariant.photo2_slot,
     show_side_photo: draftVariant.show_side_photo,
+    show_right_logo: draftVariant.show_right_logo,
+    show_notes: draftVariant.show_notes,
     color_primary: draftVariant.color_primary,
     color_secondary: draftVariant.color_secondary,
+    title: signatureText.title,
+    subtitle: signatureText.subtitle,
   })
 }
 
@@ -206,8 +266,12 @@ function loadDraftFromRow(row: DeliverableVariantRow) {
   draftVariant.photo1_slot = row.photo1_slot
   draftVariant.photo2_slot = row.photo2_slot
   draftVariant.show_side_photo = row.show_side_photo ?? true
+  draftVariant.show_right_logo = row.show_right_logo ?? true
+  draftVariant.show_notes = row.show_notes ?? false
   draftVariant.color_primary = row.color_primary ?? ''
   draftVariant.color_secondary = row.color_secondary ?? ''
+  signatureText.title = row.title ?? ''
+  signatureText.subtitle = row.subtitle ?? ''
   removeVariant(row.id)
 }
 
@@ -232,8 +296,12 @@ async function downloadDeliverable() {
       photo1_slot: v.photo1_slot,
       photo2_slot: v.photo2_slot,
       show_side_photo: v.show_side_photo ?? true,
+      show_right_logo: v.show_right_logo ?? true,
+      show_notes: v.show_notes ?? false,
       color_primary: v.color_primary || null,
       color_secondary: v.color_secondary || null,
+      ...(v.title?.trim() ? { title: v.title.trim() } : {}),
+      ...(v.subtitle?.trim() ? { subtitle: v.subtitle.trim() } : {}),
     }))
     const res = await fetch(`${base}/clients/${selectedClientId.value}/deliverable`, {
       method: 'POST',
@@ -344,6 +412,17 @@ async function downloadDeliverable() {
                 <div class="font-semibold">Édition</div>
               </template>
 
+              <template v-if="selectedClientId">
+                <div class="grid min-w-0 gap-3 sm:grid-cols-2">
+                  <UFormField label="Titre" hint="Remplace le nom en tête (v1/v2). Vide = nom de l'entreprise. Enregistrer pour le ZIP." class="min-w-0 sm:col-span-2">
+                    <UInput v-model="signatureText.title" class="w-full" :disabled="!selectedClientId" />
+                  </UFormField>
+                  <UFormField label="Sous-titre" hint="Ex. fonction, slogan." class="min-w-0 sm:col-span-2">
+                    <UInput v-model="signatureText.subtitle" class="w-full" :disabled="!selectedClientId" />
+                  </UFormField>
+                </div>
+              </template>
+
               <UFormField label="Template" class="min-w-0">
                 <USelect
                   v-model="draftVariant.template_key"
@@ -369,6 +448,21 @@ async function downloadDeliverable() {
                   v-if="draftIsSignatureV2"
                   v-model="draftVariant.show_side_photo"
                   label="Afficher la vignette à droite (photo 1)"
+                />
+                <UCheckbox
+                  v-if="draftUsesDualVisualLayout"
+                  v-model="draftVariant.show_side_photo"
+                  label="Afficher le portrait (photo 1, à gauche)"
+                />
+                <UCheckbox
+                  v-if="draftUsesDualVisualLayout"
+                  v-model="draftVariant.show_right_logo"
+                  label="Afficher le logo à droite (2e visuel + filet)"
+                />
+                <UCheckbox
+                  v-if="draftShowsNotesOption"
+                  v-model="draftVariant.show_notes"
+                  label="Afficher l'adresse (1re ligne des notes)"
                 />
               </div>
               <div class="grid gap-3 sm:grid-cols-3">
@@ -423,7 +517,17 @@ async function downloadDeliverable() {
                   :key="row.id"
                   class="ring-default flex flex-wrap items-center gap-2 rounded-lg px-3 py-2 ring-1"
                 >
-                  <span class="min-w-0 flex-1 truncate text-sm font-medium">{{ templateTitle(row.template_key) }}</span>
+                  <div class="min-w-0 flex-1">
+                    <div class="truncate text-sm font-medium">{{ templateTitle(row.template_key) }}</div>
+                    <div
+                      v-if="row.title?.trim() || row.subtitle?.trim()"
+                      class="text-muted truncate text-xs"
+                    >
+                      <span v-if="row.title?.trim()">{{ row.title.trim() }}</span>
+                      <span v-if="row.title?.trim() && row.subtitle?.trim()"> · </span>
+                      <span v-if="row.subtitle?.trim()">{{ row.subtitle.trim() }}</span>
+                    </div>
+                  </div>
                   <div class="flex shrink-0 gap-1">
                     <UButton
                       size="xs"

@@ -15,7 +15,15 @@ class DeliverableVariantIn(BaseModel):
     photo2_slot: ImageSlotSource = "default"
     show_side_photo: bool = Field(
         default=True,
-        description="Template moderne (signature-v2) : afficher la vignette à droite (photo 1).",
+        description="signature-v2 : vignette à droite ; v6/v8 : portrait à gauche.",
+    )
+    show_right_logo: bool = Field(
+        default=True,
+        description="signature-v6 / v8 : logo à droite quand portrait actif (masque aussi le filet).",
+    )
+    show_notes: bool = Field(
+        default=False,
+        description="signature-v1 / v2 : afficher la 1re ligne des notes (ex. adresse).",
     )
     color_primary: str | None = Field(
         default=None,
@@ -23,6 +31,12 @@ class DeliverableVariantIn(BaseModel):
         description="Surcharge couleur 1 (#hex ou tout CSS color) ; vide / null = couleur de la fiche client.",
     )
     color_secondary: str | None = Field(default=None, max_length=32)
+    title: str | None = Field(
+        default=None,
+        max_length=255,
+        description="Titre figé au moment « Ajouter au livrable » (aperçu / v1-v2).",
+    )
+    subtitle: str | None = Field(default=None, max_length=255)
 
 
 class DeliverableRequest(BaseModel):
@@ -40,7 +54,17 @@ class RenderPreviewIn(BaseModel):
     photo2_slot: ImageSlotSource = "default"
     show_side_photo: bool = Field(
         default=True,
-        description="Template moderne (signature-v2) : afficher la vignette à droite (photo 1).",
+        description="signature-v2 : vignette à droite ; v6/v8 : portrait à gauche.",
+    )
+    show_right_logo: bool = Field(
+        default=True,
+        description="signature-v6 / v8 : logo à droite quand portrait actif.",
+    )
+    show_notes: bool = Field(
+        default=False,
+        description="signature-v1 / v2 : afficher la 1re ligne des notes (ex. adresse).",
     )
     color_primary: str | None = Field(default=None, max_length=32)
     color_secondary: str | None = Field(default=None, max_length=32)
+    title: str | None = Field(default=None, max_length=255)
+    subtitle: str | None = Field(default=None, max_length=255)

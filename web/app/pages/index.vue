@@ -3,6 +3,7 @@ type Client = {
   id: number
   name: string
   subtitle?: string | null
+  title?: string | null
   firstname?: string | null
   lastname?: string | null
   website_url?: string | null
@@ -35,6 +36,7 @@ function emptyToNull(s: string): string | null {
 const newClient = reactive({
   name: '',
   subtitle: '',
+  title: '',
   firstname: '',
   lastname: '',
   website_url: '',
@@ -76,6 +78,7 @@ async function createClient() {
       body: JSON.stringify({
         name: newClient.name.trim(),
         subtitle: emptyToNull(newClient.subtitle),
+        title: emptyToNull(newClient.title),
         firstname: emptyToNull(newClient.firstname),
         lastname: emptyToNull(newClient.lastname),
         website_url: emptyToNull(newClient.website_url),
@@ -99,6 +102,7 @@ async function createClient() {
     Object.assign(newClient, {
       name: '',
       subtitle: '',
+      title: '',
       firstname: '',
       lastname: '',
       website_url: '',
@@ -171,8 +175,11 @@ await refresh()
                 <UFormField label="Nom (contact)" class="min-w-0">
                   <UInput v-model="newClient.lastname" class="w-full" placeholder="EDANH" />
                 </UFormField>
-                <UFormField label="Sous-titre / slogan" class="min-w-0 sm:col-span-2">
-                  <UInput v-model="newClient.subtitle" class="w-full" placeholder="Service de nettoyage professionnel" />
+                <UFormField label="Titre" hint="Optionnel. Vide = nom de l'entreprise dans les signatures v1/v2." class="min-w-0 sm:col-span-2">
+                  <UInput v-model="newClient.title" class="w-full" placeholder="Remplace le nom affiché en tête" />
+                </UFormField>
+                <UFormField label="Sous-titre" class="min-w-0 sm:col-span-2">
+                  <UInput v-model="newClient.subtitle" class="w-full" placeholder="CEO & co-fondateur" />
                 </UFormField>
                 <UFormField label="Site web" class="min-w-0">
                   <UInput v-model="newClient.website_url" class="w-full" placeholder="https://…" />

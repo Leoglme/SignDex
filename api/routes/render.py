@@ -18,6 +18,7 @@ def _placeholder_client() -> Client:
     return Client(
         name="Nom du client",
         subtitle="Sous-titre / slogan",
+        title=None,
         firstname="Prénom",
         lastname="Nom",
         website_url="https://example.com",
@@ -68,6 +69,9 @@ def render_preview(
     if not client:
         raise HTTPException(status_code=404, detail="Client introuvable")
 
+    title = (payload.title or "").strip() or None
+    subtitle = (payload.subtitle or "").strip() or None
+
     overrides = render_overrides_from_image_slots(
         client=client,
         swap_colors=payload.swap_colors,
@@ -75,6 +79,10 @@ def render_preview(
         photo1_slot=payload.photo1_slot,
         photo2_slot=payload.photo2_slot,
         show_side_photo=payload.show_side_photo,
+        show_right_logo=payload.show_right_logo,
+        show_notes=payload.show_notes,
+        title=title,
+        subtitle=subtitle,
         color_primary=payload.color_primary,
         color_secondary=payload.color_secondary,
     )

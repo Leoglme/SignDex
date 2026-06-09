@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 class ClientCreate(BaseModel):
     name: str = Field(min_length=1, max_length=255, description="Nom d'entreprise / company name (unique).")
     subtitle: str | None = None
+    title: str | None = Field(default=None, max_length=255, description="Titre / fonction en signature (ex. CEO).")
 
     firstname: str | None = Field(default=None, max_length=128)
     lastname: str | None = Field(default=None, max_length=128)
@@ -36,6 +37,7 @@ class ClientCreate(BaseModel):
 class ClientUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=255)
     subtitle: str | None = None
+    title: str | None = Field(default=None, max_length=255)
     firstname: str | None = Field(default=None, max_length=128)
     lastname: str | None = Field(default=None, max_length=128)
     website_url: str | None = None
@@ -59,6 +61,7 @@ class ClientOut(BaseModel):
     id: int
     name: str
     subtitle: str | None
+    title: str | None
     firstname: str | None
     lastname: str | None
     website_url: str | None

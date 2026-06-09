@@ -19,6 +19,7 @@ from fastapi.responses import JSONResponse
 from config import get_settings
 from routes import clients as clients_routes
 from routes import generate as generate_routes
+from routes import organizations as organizations_routes
 from routes import render as render_routes
 from routes import services as services_routes
 from routes import templates as templates_routes
@@ -87,6 +88,7 @@ def health() -> dict[str, str]:
 
 
 app.include_router(clients_routes.router, prefix="/clients", tags=["clients"])
+app.include_router(organizations_routes.router, prefix="/organizations", tags=["organizations"])
 app.include_router(templates_routes.router, prefix="/templates", tags=["templates"])
 app.include_router(render_routes.router, tags=["render"])
 app.include_router(generate_routes.router, tags=["deliverables"])

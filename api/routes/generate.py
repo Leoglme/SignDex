@@ -13,6 +13,8 @@ from core.database import get_db
 from models import Client
 from schemas.deliverable import DeliverableRequest, DeliverableVariantIn
 from services.render_service import (
+    build_mailsignature_document,
+    encode_mailsignature_document,
     fake_mail_preview_to_png_bytes,
     html_to_png_bytes,
     png_to_jpg_bytes,
@@ -99,6 +101,11 @@ def generate_deliverable(
         _lisezmoi_intro(n_templates=len(variants_in)),
     )
 
+    apple_readme_path = Path(__file__).resolve().parent.parent / "assets" / "LISEZMOI-apple-mail.txt"
+    if not apple_readme_path.exists():
+        raise HTTPException(status_code=500, detail="LISEZMOI-apple-mail.txt manquant côté API")
+    apple_readme_txt = apple_readme_path.read_text(encoding="utf-8")
+
     now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     slug = _safe_slug(client.name)
     zip_name = f"signdex_{slug}_{now}.zip"
@@ -106,6 +113,7 @@ def generate_deliverable(
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", compression=zipfile.ZIP_DEFLATED) as z:
         z.writestr("LISEZMOI-signatures.txt", readme_txt)
+        z.writestr("LISEZMOI-apple-mail.txt", apple_readme_txt)
 
         for v, stem in _variant_zip_stems(slug, variants_in):
             raw_template = load_template_html(v.template_key)
@@ -116,6 +124,10 @@ def generate_deliverable(
                 photo1_slot=v.photo1_slot,
                 photo2_slot=v.photo2_slot,
                 show_side_photo=v.show_side_photo,
+                show_right_logo=v.show_right_logo,
+                show_notes=v.show_notes,
+                title=(v.title or "").strip() or None,
+                subtitle=(v.subtitle or "").strip() or None,
                 color_primary=v.color_primary,
                 color_secondary=v.color_secondary,
             )
@@ -123,15 +135,21 @@ def generate_deliverable(
 
             z.writestr(f"HTML/{stem}.html", rendered_html)
 
+            z.writestr(
+                f"apple-mail/{stem}/signature.mailsignature",
+                encode_mailsignature_document(build_mailsignature_document(rendered_html)),
+            )
+
             png = html_to_png_bytes(html=rendered_html)
             jpg = png_to_jpg_bytes(png_bytes=png)
 
             z.writestr(f"PNG/{stem}.png", png)
             z.writestr(f"JPG/{stem}.jpg", jpg)
 
+            sender_name = " ".join(p for p in (client.firstname, client.lastname) if p) or client.name
             exemple_mail_png = fake_mail_preview_to_png_bytes(
                 rendered_signature_full_html=rendered_html,
-                sender_name=client.name,
+                sender_name=sender_name,
                 sender_email=client.email,
             )
             z.writestr(

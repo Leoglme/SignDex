@@ -77,6 +77,35 @@
 
   Vous devriez ainsi obtenir la mise en page souhaitée avec des liens cliquables.
 
+
+--------------------------------------------------------------------------------
+  MODIFIER UN TEXTE DE VOTRE SIGNATURE DANS GMAIL
+--------------------------------------------------------------------------------
+
+  Une fois la signature collée dans Gmail, vous pouvez la modifier directement,
+  sans repasser par le fichier HTML. Par exemple pour changer le prénom/nom,
+  l'intitulé de poste, ou corriger une faute.
+
+  1) Ouvrez l'éditeur de signature
+     Dans Gmail : Paramètres (roue dentée en haut à droite) → « Voir tous les
+     paramètres » → premier onglet « Général » → descendez jusqu'à la section
+     « Signature ». Votre signature s'y affiche dans une zone d'édition.
+
+  2) Modifiez le texte directement
+     Cliquez dans la signature comme dans un traitement de texte :
+       • Pour SUPPRIMER : sélectionnez le texte et appuyez sur Suppr / Retour
+         arrière.
+       • Pour AJOUTER ou CORRIGER : placez le curseur à l'endroit voulu et tapez.
+       • Pour METTRE EN FORME : sélectionnez le texte, puis utilisez la barre
+         d'outils en bas de la zone (Gras B, Italique I, Souligné, couleur,
+         taille de police, etc.).
+
+  3) Enregistrez
+     Descendez en bas de la page et cliquez sur « Enregistrer les modifications ».
+
+  Astuce : modifiez uniquement le texte. Évitez de supprimer le logo ou les
+  éléments de mise en page si vous souhaitez conserver le design d'origine.
+
 ================================================================================
   Réalisé par Léo Guillaume — https://dibodev.fr
 ================================================================================

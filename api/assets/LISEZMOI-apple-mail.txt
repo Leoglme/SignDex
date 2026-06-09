@@ -1,0 +1,157 @@
+================================================================================
+  SIGNATURE E-MAIL POUR APPLE MAIL (Mac) — MODE D’EMPLOI
+================================================================================
+
+  Ce mode d’emploi concerne UNIQUEMENT le logiciel « Mail » d’Apple sur Mac
+  (macOS). Si vous utilisez Gmail dans votre navigateur, reportez-vous plutôt
+  au fichier « LISEZMOI-signatures.txt ».
+
+  Le fournisseur de votre adresse e-mail (Hostinger, Gmail, iCloud, etc.) n’a
+  aucune importance ici : la signature est gérée par le logiciel Mail sur votre
+  Mac, indépendamment de votre fournisseur.
+
+
+--------------------------------------------------------------------------------
+  POURQUOI C’EST DIFFÉRENT DE GMAIL
+--------------------------------------------------------------------------------
+
+  Gmail est un site web : on y colle la signature dans une page de réglages.
+
+  Apple Mail est un logiciel installé sur votre Mac : la signature y est un
+  FICHIER stocké sur votre ordinateur. Ce fichier porte l’extension
+  « .mailsignature ». Apple Mail ne permet pas de coller du code HTML dans ses
+  réglages : il faut donc remplacer le contenu de ce fichier directement.
+
+  C’est exactement ce que nous avons préparé pour vous : le dossier
+  « apple-mail » contient un sous-dossier par version de signature, et dans
+  chacun un fichier « signature.mailsignature » prêt à l’emploi.
+
+
+--------------------------------------------------------------------------------
+  CE DONT VOUS AVEZ BESOIN
+--------------------------------------------------------------------------------
+
+  • Un Mac avec le logiciel Apple Mail.
+  • Le dossier « apple-mail » fourni dans cette livraison.
+  • 5 minutes.
+
+  Choisissez d’abord la version qui vous plaît (regardez les aperçus dans les
+  dossiers JPG / EXEMPLES). Retenez le nom de son sous-dossier dans
+  « apple-mail » : c’est le fichier que vous allez utiliser.
+
+
+--------------------------------------------------------------------------------
+  ÉTAPE 1 — CRÉER UNE SIGNATURE VIDE DANS APPLE MAIL
+--------------------------------------------------------------------------------
+
+  Cette étape sert à « préparer la place » : elle crée automatiquement le
+  fichier que nous allons ensuite remplacer.
+
+  1) Ouvrez Apple Mail.
+  2) Menu « Mail » (en haut à gauche) → « Réglages… » (ou « Préférences… »).
+  3) Cliquez sur l’onglet « Signatures ».
+  4) Dans la colonne de gauche, sélectionnez le compte e-mail concerné.
+  5) Cliquez sur le bouton « + » pour créer une nouvelle signature.
+  6) Donnez-lui un nom (par exemple : « Ma signature »). Le contenu affiché à
+     droite n’a aucune importance, vous pouvez le laisser tel quel.
+  7) FERMEZ COMPLÈTEMENT Apple Mail :
+     menu « Mail » → « Quitter Mail » (raccourci : Cmd + Q).
+     C’est important : Mail ne doit pas tourner pendant les étapes suivantes.
+
+
+--------------------------------------------------------------------------------
+  ÉTAPE 2 — OUVRIR LE DOSSIER DES SIGNATURES SUR VOTRE MAC
+--------------------------------------------------------------------------------
+
+  Le dossier des signatures est « caché » par défaut. Voici comment l’ouvrir :
+
+  1) Ouvrez le Finder (icône au visage souriant dans le Dock).
+  2) Dans la barre de menus en haut, cliquez sur « Aller ».
+  3) Maintenez la touche « Option » (alt ⌥) enfoncée : une entrée
+     « Bibliothèque » apparaît dans le menu. Cliquez dessus.
+  4) Dans la fenêtre qui s’ouvre, ouvrez successivement les dossiers :
+        Mail  →  V10  (ou V9, V8… selon votre version de macOS)
+              →  MailData  →  Signatures
+
+     ASTUCE plus rapide : dans le Finder, menu « Aller » → « Aller au
+     dossier… » (Cmd + Maj + G), puis collez exactement ce chemin et validez :
+        ~/Library/Mail/V10/MailData/Signatures
+     (Si « V10 » n’existe pas, essayez V9, puis V8. Prenez le numéro le plus
+     élevé présent sur votre Mac.)
+
+  5) Vous voyez un ou plusieurs fichiers se terminant par « .mailsignature ».
+     Leur nom est une longue suite de lettres et de chiffres (un identifiant).
+     C’est normal. Si vous venez de créer UNE seule signature, il n’y en a
+     qu’un — c’est celui-là.
+
+
+--------------------------------------------------------------------------------
+  ÉTAPE 3 — REMPLACER LE CONTENU PAR NOTRE SIGNATURE
+--------------------------------------------------------------------------------
+
+  Nous n’allons PAS supprimer le fichier de votre Mac : nous allons seulement
+  remplacer ce qu’il y a dedans.
+
+  1) Sur le fichier « .mailsignature » repéré à l’étape 2 :
+     clic droit → « Ouvrir avec » → « TextEdit ».
+     (Important : ouvrez bien avec TextEdit, pas avec Mail.)
+
+  2) Dans TextEdit, sélectionnez TOUT (Cmd + A) puis supprimez (touche Suppr).
+     La fenêtre doit être complètement vide.
+
+  3) Ouvrez NOTRE fichier : dans le dossier « apple-mail », ouvrez le
+     sous-dossier de la version choisie, puis faites un clic droit sur
+     « signature.mailsignature » → « Ouvrir avec » → « TextEdit ».
+
+  4) Dans cette fenêtre, sélectionnez TOUT (Cmd + A) puis copiez (Cmd + C).
+
+  5) Revenez sur la fenêtre du fichier de votre Mac (celui de l’étape 1),
+     cliquez dedans et collez (Cmd + V).
+
+  6) Enregistrez (Cmd + S), puis fermez TextEdit.
+
+  Le contenu de votre fichier de signature est maintenant celui de la version
+  que vous avez choisie.
+
+
+--------------------------------------------------------------------------------
+  ÉTAPE 4 — VERROUILLER LE FICHIER (TRÈS IMPORTANT)
+--------------------------------------------------------------------------------
+
+  Sans cette étape, Apple Mail risque d’écraser votre belle signature au
+  prochain démarrage.
+
+  1) Dans le Finder, faites un clic droit sur le fichier « .mailsignature »
+     que vous venez de modifier → « Lire les informations » (Cmd + I).
+  2) En haut de la fenêtre, cochez la case « Verrouillé ».
+  3) Fermez cette fenêtre.
+
+
+--------------------------------------------------------------------------------
+  ÉTAPE 5 — VÉRIFIER DANS APPLE MAIL
+--------------------------------------------------------------------------------
+
+  1) Rouvrez Apple Mail.
+  2) Menu « Mail » → « Réglages… » → onglet « Signatures » : votre signature
+     mise en forme doit apparaître dans l’aperçu de droite.
+  3) Pour l’utiliser automatiquement : dans cet onglet, en bas, choisissez
+     votre signature dans le menu « Choisir la signature ».
+  4) Écrivez un nouveau message pour vérifier que la signature s’ajoute bien.
+
+
+--------------------------------------------------------------------------------
+  SI LA SIGNATURE NE S’AFFICHE PAS CORRECTEMENT
+--------------------------------------------------------------------------------
+
+  • Vérifiez que vous aviez bien QUITTÉ Mail (Cmd + Q) avant de modifier le
+    fichier, et que vous l’avez rouvert seulement après.
+  • Vérifiez que vous avez bien ouvert le fichier avec TextEdit (et non Mail).
+  • Si vous aviez plusieurs signatures, vous avez peut-être modifié le mauvais
+    fichier : recommencez en n’ayant créé qu’UNE seule signature à l’étape 1.
+  • Les images (logo, portrait, icônes) sont intégrées et optimisées dans le
+    fichier (quelques dizaines de Ko) : affichage fiable dans Mail, sans
+    recharger Supabase. Une connexion reste utile pour les liens du site.
+
+================================================================================
+  Réalisé par Léo Guillaume — https://dibodev.fr
+================================================================================

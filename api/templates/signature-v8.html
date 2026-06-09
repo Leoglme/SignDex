@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Signature mail — v8 carte premium</title>
+  <style type="text/css">
+    @media only screen and (max-width: 520px) {
+      .sig-col-half { display: block !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; }
+      .sig-col-half-pad-r { padding-right: 0 !important; padding-bottom: 8px !important; }
+      .sig-addr { white-space: normal !important; word-break: break-word !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;">
+{#
+  Carte deux niveaux (inspirée v2, finition chauffeur premium) : bandeau tête + zone contacts avec icônes.
+  Fond ivoire, filet accent en tête, cadres blancs pour logo / portrait. Helvetica système.
+
+  Images (1 ou 2) — en-tête :
+    - logo seul     → logo à gauche ;
+    - portrait seul → portrait à droite (show_side_photo + photo1_url) ;
+    - les deux      → portrait gauche, logo droite.
+#}
+{% set accent = client.color_primary or '#E04E3F' %}
+{% set ic = (accent | replace('#', '')) %}
+{% set ink = '#1c1c1c' %}
+{% set body = '#4a4a4a' %}
+{% set faint = '#9a9590' %}
+{% set card_bg = '#f6f5f3' %}
+{% set card_line = '#e6e3df' %}
+{% set white = '#ffffff' %}
+{% set font = "'Helvetica Neue',Helvetica,Arial,sans-serif" %}
+{% set display_name = client.full_name if client.full_name else (client.firstname if client.firstname else client.name) %}
+{% set show_photo = client.photo1_url and client.show_side_photo %}
+{% set show_right_logo = client.show_right_logo and client.logo_url %}
+{% set dual_visuals = show_photo and show_right_logo %}
+{% set photo_w = 54 %}
+{% set photo_h = 72 %}
+{% set logo_box_w = 64 %}
+{% set logo_box_h = 52 %}
+{% set logo_img = 44 %}
+
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;max-width:480px;width:100%;font-family:{{ font }};">
+
+  <tr>
+    <td style="padding:0;">
+
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;background-color:{{ card_bg }};border-top:3px solid {{ accent }};border-left:1px solid {{ card_line }};border-right:1px solid {{ card_line }};border-bottom:1px solid {{ card_line }};">
+
+        {# ========== En-tête : identité + visuels ========== #}
+        <tr>
+          <td style="padding:14px 18px 12px;border-bottom:1px solid {{ card_line }};">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+              <tr>
+
+                {% if show_photo %}
+                <td valign="middle" style="width:{{ photo_w }}px;padding:0 14px 0 0;vertical-align:middle;line-height:0;font-size:0;">
+                  {% if client.website_url %}<a href="{{ client.website_url }}" target="_blank" rel="noopener" style="text-decoration:none;">{% endif %}
+                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color:{{ white }};border:1px solid {{ card_line }};border-radius:7px;">
+                    <tr>
+                      <td style="width:{{ photo_w }}px;height:{{ photo_h }}px;padding:0;line-height:0;font-size:0;mso-line-height-rule:exactly;overflow:hidden;border-radius:6px;">
+                        <img src="{{ client.photo1_url }}" alt="{{ display_name }}" width="{{ photo_w }}" height="{{ photo_h }}" style="display:block;width:{{ photo_w }}px;height:{{ photo_h }}px;border:0;object-fit:cover;object-position:center top;">
+                      </td>
+                    </tr>
+                  </table>
+                  {% if client.website_url %}</a>{% endif %}
+                </td>
+                {% elif client.logo_url %}
+                <td valign="middle" style="width:{{ logo_box_w }}px;padding:0 14px 0 0;vertical-align:middle;line-height:0;font-size:0;">
+                  {% if client.website_url %}<a href="{{ client.website_url }}" target="_blank" rel="noopener" style="text-decoration:none;">{% endif %}
+                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color:{{ white }};border:1px solid {{ card_line }};border-radius:7px;">
+                    <tr>
+                      <td style="width:{{ logo_box_w }}px;height:{{ logo_box_h }}px;padding:5px 12px;text-align:center;vertical-align:middle;line-height:0;font-size:0;mso-line-height-rule:exactly;">
+                        <img src="{{ client.logo_url }}" alt="{{ client.name or '' }}" width="{{ logo_img }}" style="display:block;width:{{ logo_img }}px;height:auto;max-width:{{ logo_img }}px;max-height:{{ logo_box_h - 10 }}px;border:0;margin:0 auto;object-fit:contain;">
+                      </td>
+                    </tr>
+                  </table>
+                  {% if client.website_url %}</a>{% endif %}
+                </td>
+                {% endif %}
+
+                <td valign="middle" style="vertical-align:middle;width:100%;{% if dual_visuals %}padding-right:14px;{% endif %}">
+                  <p style="margin:0 0 4px;font-family:{{ font }};font-size:18px;font-weight:600;color:{{ ink }};letter-spacing:.2px;line-height:1.2;">{{ display_name }}</p>
+                  {% if client.role_line %}
+                  <p style="margin:0;font-family:{{ font }};font-size:10px;line-height:1.45;text-transform:uppercase;letter-spacing:1.9px;color:{{ faint }};">{{ client.role_line }}</p>
+                  {% endif %}
+                </td>
+
+                {% if dual_visuals %}
+                <td valign="middle" style="width:{{ logo_box_w }}px;padding:0 0 0 16px;vertical-align:middle;text-align:right;line-height:0;font-size:0;">
+                  {% if client.website_url %}<a href="{{ client.website_url }}" target="_blank" rel="noopener" style="text-decoration:none;">{% endif %}
+                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="right" style="background-color:{{ white }};border:1px solid {{ card_line }};border-radius:7px;margin-left:auto;">
+                    <tr>
+                      <td style="width:{{ logo_box_w }}px;height:{{ logo_box_h }}px;padding:5px 12px;text-align:center;vertical-align:middle;line-height:0;font-size:0;mso-line-height-rule:exactly;">
+                        <img src="{{ client.logo_url }}" alt="{{ client.name or '' }}" width="{{ logo_img }}" style="display:block;width:{{ logo_img }}px;height:auto;max-width:{{ logo_img }}px;max-height:{{ logo_box_h - 10 }}px;border:0;margin:0 auto;object-fit:contain;">
+                      </td>
+                    </tr>
+                  </table>
+                  {% if client.website_url %}</a>{% endif %}
+                </td>
+                {% endif %}
+
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        {# ========== Contacts : grille 2×2 (tél. | mail / site | adresse) ========== #}
+        <tr>
+          <td style="padding:10px 18px 12px;background-color:{{ white }};">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+
+              <tr>
+                {% if client.phone_primary_display or client.phone_secondary_display %}
+                <td class="sig-col-half sig-col-half-pad-r" width="50%" valign="middle" style="width:50%;padding:0 10px 8px 0;vertical-align:middle;">
+                  <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                    <tr>
+                      <td style="padding:0 8px 0 0;vertical-align:middle;">
+                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color:{{ card_bg }};border:1px solid {{ card_line }};border-radius:6px;">
+                          <tr>
+                            <td style="width:26px;min-width:26px;height:26px;min-height:26px;text-align:center;vertical-align:middle;line-height:26px;font-size:0;">
+                              <img src="https://img.icons8.com/ios/50/{{ ic }}/phone.png" alt="" width="14" height="14" style="display:block;width:14px;height:14px;border:0;margin:0 auto;">
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td style="vertical-align:middle;font-family:{{ font }};font-size:12px;line-height:1.4;">
+                        {%- if client.phone_primary_display -%}<a href="tel:{{ client.phone_primary_raw or '' }}" style="color:{{ ink }};text-decoration:none;font-weight:500;">{{ client.phone_primary_display }}</a>{%- endif -%}
+                        {%- if client.phone_primary_display and client.phone_secondary_display -%}<span style="color:#d8d4cf;">&nbsp;&middot;&nbsp;</span>{%- endif -%}
+                        {%- if client.phone_secondary_display -%}<a href="tel:{{ client.phone_secondary_raw or '' }}" style="color:{{ ink }};text-decoration:none;font-weight:500;">{{ client.phone_secondary_display }}</a>{%- endif -%}
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+                {% endif %}
+
+                {% if client.email %}
+                <td class="sig-col-half" width="50%" valign="middle" style="width:50%;padding:0 0 8px 0;vertical-align:middle;">
+                  <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                    <tr>
+                      <td style="padding:0 8px 0 0;vertical-align:middle;">
+                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color:{{ card_bg }};border:1px solid {{ card_line }};border-radius:6px;">
+                          <tr>
+                            <td style="width:26px;min-width:26px;height:26px;min-height:26px;text-align:center;vertical-align:middle;line-height:26px;font-size:0;">
+                              <img src="https://img.icons8.com/ios/50/{{ ic }}/mail.png" alt="" width="14" height="14" style="display:block;width:14px;height:14px;border:0;margin:0 auto;">
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td style="vertical-align:middle;font-family:{{ font }};font-size:12px;line-height:1.4;">
+                        <a href="mailto:{{ client.email }}" style="color:{{ body }};text-decoration:none;">{{ client.email }}</a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+                {% endif %}
+              </tr>
+
+              <tr>
+                {% if client.website_url or client.website_label %}
+                <td class="sig-col-half sig-col-half-pad-r" width="50%" valign="middle" style="width:50%;padding:0 10px 0 0;vertical-align:middle;">
+                  <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                    <tr>
+                      <td style="padding:0 8px 0 0;vertical-align:middle;">
+                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color:{{ card_bg }};border:1px solid {{ card_line }};border-radius:6px;">
+                          <tr>
+                            <td style="width:26px;min-width:26px;height:26px;min-height:26px;text-align:center;vertical-align:middle;line-height:26px;font-size:0;">
+                              <img src="https://img.icons8.com/ios/50/{{ ic }}/link.png" alt="" width="14" height="14" style="display:block;width:14px;height:14px;border:0;margin:0 auto;">
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td style="vertical-align:middle;font-family:{{ font }};font-size:12px;line-height:1.4;">
+                        <a href="{{ client.website_url or '' }}" target="_blank" rel="noopener" style="color:{{ accent }};text-decoration:none;font-weight:500;">{{ client.website_label or client.website_url }}</a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+                {% endif %}
+
+                {% if client.address %}
+                <td class="sig-col-half" width="50%" valign="middle" style="width:50%;padding:0;vertical-align:middle;">
+                  <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                    <tr>
+                      <td style="padding:0 8px 0 0;vertical-align:middle;">
+                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="background-color:{{ card_bg }};border:1px solid {{ card_line }};border-radius:6px;">
+                          <tr>
+                            <td style="width:26px;min-width:26px;height:26px;min-height:26px;text-align:center;vertical-align:middle;line-height:26px;font-size:0;">
+                              <img src="https://img.icons8.com/ios/50/{{ ic }}/marker.png" alt="" width="15" height="15" style="display:block;width:15px;height:15px;border:0;margin:0 auto;">
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td class="sig-addr" style="vertical-align:middle;font-family:{{ font }};font-size:11.5px;line-height:1.4;color:{{ body }};white-space:nowrap;">{{ client.address }}</td>
+                    </tr>
+                  </table>
+                </td>
+                {% endif %}
+              </tr>
+
+            </table>
+
+            {# ---------- Réseaux (pastilles blanches, icônes couleur — comme v2, plus sobre) ---------- #}
+            {% if client.linkedin_url or client.instagram_url or client.facebook_url or client.tiktok_url or client.youtube_url %}
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;margin-top:14px;">
+              <tr>
+                <td style="font-size:0;line-height:0;">
+
+                  {% if client.linkedin_url %}
+                  <a href="{{ client.linkedin_url }}" title="LinkedIn" target="_blank" rel="noopener" style="display:inline-block;width:30px;height:30px;line-height:28px;text-align:center;border-radius:6px;background-color:{{ card_bg }};border:1px solid {{ card_line }};text-decoration:none;margin-right:6px;vertical-align:middle;">
+                    <img src="https://img.icons8.com/ios/48/{{ ic }}/linkedin.png" alt="" width="16" height="16" style="width:16px;height:16px;border:0;display:inline-block;vertical-align:middle;">
+                  </a>
+                  {% endif %}
+                  {% if client.instagram_url %}
+                  <a href="{{ client.instagram_url }}" title="Instagram" target="_blank" rel="noopener" style="display:inline-block;width:30px;height:30px;line-height:28px;text-align:center;border-radius:6px;background-color:{{ card_bg }};border:1px solid {{ card_line }};text-decoration:none;margin-right:6px;vertical-align:middle;">
+                    <img src="https://img.icons8.com/ios/48/{{ ic }}/instagram-new.png" alt="" width="16" height="16" style="width:16px;height:16px;border:0;display:inline-block;vertical-align:middle;">
+                  </a>
+                  {% endif %}
+                  {% if client.facebook_url %}
+                  <a href="{{ client.facebook_url }}" title="Facebook" target="_blank" rel="noopener" style="display:inline-block;width:30px;height:30px;line-height:28px;text-align:center;border-radius:6px;background-color:{{ card_bg }};border:1px solid {{ card_line }};text-decoration:none;margin-right:6px;vertical-align:middle;">
+                    <img src="https://img.icons8.com/ios/48/{{ ic }}/facebook-new.png" alt="" width="16" height="16" style="width:16px;height:16px;border:0;display:inline-block;vertical-align:middle;">
+                  </a>
+                  {% endif %}
+                  {% if client.tiktok_url %}
+                  <a href="{{ client.tiktok_url }}" title="TikTok" target="_blank" rel="noopener" style="display:inline-block;width:30px;height:30px;line-height:28px;text-align:center;border-radius:6px;background-color:{{ card_bg }};border:1px solid {{ card_line }};text-decoration:none;margin-right:6px;vertical-align:middle;">
+                    <img src="https://img.icons8.com/ios/48/{{ ic }}/tiktok.png" alt="" width="16" height="16" style="width:16px;height:16px;border:0;display:inline-block;vertical-align:middle;">
+                  </a>
+                  {% endif %}
+                  {% if client.youtube_url %}
+                  <a href="{{ client.youtube_url }}" title="YouTube" target="_blank" rel="noopener" style="display:inline-block;width:30px;height:30px;line-height:28px;text-align:center;border-radius:6px;background-color:{{ card_bg }};border:1px solid {{ card_line }};text-decoration:none;vertical-align:middle;">
+                    <img src="https://img.icons8.com/ios/48/{{ ic }}/youtube-play.png" alt="" width="16" height="16" style="width:16px;height:16px;border:0;display:inline-block;vertical-align:middle;">
+                  </a>
+                  {% endif %}
+
+                </td>
+              </tr>
+            </table>
+            {% endif %}
+
+          </td>
+        </tr>
+
+      </table>
+
+    </td>
+  </tr>
+</table>
+</body>
+</html>

@@ -4,6 +4,9 @@ import { readDir, writeFile, readFile, mkdir, exists } from '@tauri-apps/plugin-
 export type DeliverableIndexItem = {
   /** Service source: 'signatures' (historique) | 'flyer' | 'banners' | 'cards-visite' | 'cards-fidelite' */
   service?: string
+  /** 'client' (défaut) ou 'organization' : un livrable complet d'organisation (1 clic). */
+  kind?: 'client' | 'organization'
+  /** Pour kind='organization' : l'id de l'organisation (réutilise le champ clientId). */
   clientId: number
   clientName: string
   createdAtIso: string
@@ -19,6 +22,10 @@ export type DeliverableIndexItem = {
     photo1_slot: string
     photo2_slot: string
     show_side_photo?: boolean
+    show_right_logo?: boolean
+    show_notes?: boolean
+    title?: string
+    subtitle?: string
   }[]
 }
 

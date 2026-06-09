@@ -9,6 +9,7 @@ type Client = {
   id: number
   name: string
   subtitle?: string | null
+  title?: string | null
   firstname?: string | null
   lastname?: string | null
   website_url?: string | null
@@ -37,10 +38,16 @@ type DeliverableVariantRow = {
   logo_slot: ImageSlotSource
   photo1_slot: ImageSlotSource
   photo2_slot: ImageSlotSource
-  /** Template moderne (signature-v2) : vignette à droite. */
+  /** signature-v2 : vignette à droite ; v6/v8 : portrait à gauche. */
   show_side_photo: boolean
+  /** signature-v6 / v8 : logo à droite (2e visuel). */
+  show_right_logo: boolean
+  /** signature-v1 / v2 : afficher la 1re ligne des notes (adresse). */
+  show_notes: boolean
   color_primary: string
   color_secondary: string
+  title: string
+  subtitle: string
 }
 
 function emptyToNull(s: string): string | null {
@@ -51,6 +58,7 @@ function emptyToNull(s: string): string | null {
 function syncEditFromClient(c: Client) {
   editForm.name = c.name
   editForm.subtitle = c.subtitle ?? ''
+  editForm.title = c.title?.trim() ?? ''
   editForm.firstname = c.firstname ?? ''
   editForm.lastname = c.lastname ?? ''
   editForm.website_url = c.website_url ?? ''
@@ -83,6 +91,8 @@ const draftVariant = reactive({
   photo1_slot: 'default' as ImageSlotSource,
   photo2_slot: 'default' as ImageSlotSource,
   show_side_photo: true,
+  show_right_logo: true,
+  show_notes: false,
   color_primary: '',
   color_secondary: '',
 })
@@ -104,6 +114,7 @@ const photo2FileRef = ref<HTMLInputElement | null>(null)
 const editForm = reactive({
   name: '',
   subtitle: '',
+  title: '',
   firstname: '',
   lastname: '',
   website_url: '',
@@ -141,6 +152,14 @@ const templateSelectItems = computed(() =>
 )
 
 const draftIsSignatureV2 = computed(() => draftVariant.template_key === 'signature-v2')
+const draftUsesDualVisualLayout = computed(() => {
+  const k = draftVariant.template_key
+  return k === 'signature-v6' || k === 'signature-v8'
+})
+const draftShowsNotesOption = computed(() => {
+  const k = draftVariant.template_key
+  return k === 'signature-v1' || k === 'signature-v2'
+})
 
 function schedulePreview() {
   if (previewDebounce) clearTimeout(previewDebounce)
@@ -171,6 +190,10 @@ async function loadPreview() {
       photo1_slot: draftVariant.photo1_slot,
       photo2_slot: draftVariant.photo2_slot,
       show_side_photo: draftVariant.show_side_photo,
+      show_right_logo: draftVariant.show_right_logo,
+      show_notes: draftVariant.show_notes,
+      ...(editForm.title.trim() ? { title: editForm.title.trim() } : {}),
+      ...(editForm.subtitle.trim() ? { subtitle: editForm.subtitle.trim() } : {}),
       color_primary: draftVariant.color_primary || null,
       color_secondary: draftVariant.color_secondary || null,
     }
@@ -211,6 +234,10 @@ watch(
 )
 
 watch(draftVariant, () => schedulePreview(), { deep: true })
+watch(
+  () => [editForm.title, editForm.subtitle] as const,
+  () => schedulePreview(),
+)
 
 onMounted(() => schedulePreview())
 onBeforeUnmount(() => {
@@ -248,8 +275,12 @@ function pushDraftToDeliverable() {
     photo1_slot: draftVariant.photo1_slot,
     photo2_slot: draftVariant.photo2_slot,
     show_side_photo: draftVariant.show_side_photo,
+    show_right_logo: draftVariant.show_right_logo,
+    show_notes: draftVariant.show_notes,
     color_primary: draftVariant.color_primary,
     color_secondary: draftVariant.color_secondary,
+    title: editForm.title,
+    subtitle: editForm.subtitle,
   })
 }
 
@@ -269,8 +300,12 @@ function loadDraftFromRow(row: DeliverableVariantRow) {
   draftVariant.photo1_slot = row.photo1_slot
   draftVariant.photo2_slot = row.photo2_slot
   draftVariant.show_side_photo = row.show_side_photo ?? true
+  draftVariant.show_right_logo = row.show_right_logo ?? true
+  draftVariant.show_notes = row.show_notes ?? false
   draftVariant.color_primary = row.color_primary ?? ''
   draftVariant.color_secondary = row.color_secondary ?? ''
+  editForm.title = row.title ?? ''
+  editForm.subtitle = row.subtitle ?? ''
   removeVariant(row.id)
 }
 
@@ -282,6 +317,7 @@ function buildUpdatePayload() {
   return {
     name: editForm.name.trim(),
     subtitle: emptyToNull(editForm.subtitle),
+    title: emptyToNull(editForm.title),
     firstname: emptyToNull(editForm.firstname),
     lastname: emptyToNull(editForm.lastname),
     website_url: emptyToNull(editForm.website_url),
@@ -366,8 +402,12 @@ async function downloadDeliverable() {
       photo1_slot: v.photo1_slot,
       photo2_slot: v.photo2_slot,
       show_side_photo: v.show_side_photo ?? true,
+      show_right_logo: v.show_right_logo ?? true,
+      show_notes: v.show_notes ?? false,
       color_primary: v.color_primary || null,
       color_secondary: v.color_secondary || null,
+      ...(v.title?.trim() ? { title: v.title.trim() } : {}),
+      ...(v.subtitle?.trim() ? { subtitle: v.subtitle.trim() } : {}),
     }))
     const res = await fetch(`${base}/clients/${client.value.id}/deliverable`, {
       method: 'POST',
@@ -458,7 +498,10 @@ async function downloadDeliverable() {
                 <UFormField label="Nom (contact)" class="min-w-0">
                   <UInput v-model="editForm.lastname" class="w-full" />
                 </UFormField>
-                <UFormField label="Sous-titre / slogan" class="min-w-0 sm:col-span-2">
+                <UFormField label="Titre" hint="Optionnel. Remplace le nom en tête (v1/v2) ; sinon nom de l'entreprise." class="min-w-0 sm:col-span-2">
+                  <UInput v-model="editForm.title" class="w-full" />
+                </UFormField>
+                <UFormField label="Sous-titre" hint="Ex. fonction, slogan (CEO & co-fondateur)." class="min-w-0 sm:col-span-2">
                   <UInput v-model="editForm.subtitle" class="w-full" />
                 </UFormField>
                 <UFormField label="Site web" class="min-w-0 sm:col-span-2">
@@ -494,7 +537,7 @@ async function downloadDeliverable() {
                 <UFormField label="Couleur 2" class="min-w-0">
                   <UInput v-model="editForm.color_secondary" class="w-full" placeholder="#5a9abf" />
                 </UFormField>
-                <UFormField label="Notes" class="min-w-0 sm:col-span-2">
+                <UFormField label="Notes" hint="1re ligne = adresse (affichable en signature v1/v2)." class="min-w-0 sm:col-span-2">
                   <textarea
                     v-model="editForm.notes"
                     rows="3"
@@ -624,6 +667,15 @@ async function downloadDeliverable() {
                 <div class="font-semibold">Édition</div>
               </template>
 
+              <div class="grid min-w-0 gap-3 sm:grid-cols-2">
+                <UFormField label="Titre" hint="Optionnel (v1/v2). Enregistrer la fiche pour le ZIP." class="min-w-0 sm:col-span-2">
+                  <UInput v-model="editForm.title" class="w-full" />
+                </UFormField>
+                <UFormField label="Sous-titre" hint="Ex. fonction, slogan (CEO & co-fondateur)." class="min-w-0 sm:col-span-2">
+                  <UInput v-model="editForm.subtitle" class="w-full" />
+                </UFormField>
+              </div>
+
               <UFormField label="Template" class="min-w-0">
                 <USelect
                   v-model="draftVariant.template_key"
@@ -648,6 +700,21 @@ async function downloadDeliverable() {
                   v-if="draftIsSignatureV2"
                   v-model="draftVariant.show_side_photo"
                   label="Afficher la vignette à droite (photo 1)"
+                />
+                <UCheckbox
+                  v-if="draftUsesDualVisualLayout"
+                  v-model="draftVariant.show_side_photo"
+                  label="Afficher le portrait (photo 1, à gauche)"
+                />
+                <UCheckbox
+                  v-if="draftUsesDualVisualLayout"
+                  v-model="draftVariant.show_right_logo"
+                  label="Afficher le logo à droite (2e visuel + filet)"
+                />
+                <UCheckbox
+                  v-if="draftShowsNotesOption"
+                  v-model="draftVariant.show_notes"
+                  label="Afficher l'adresse (1re ligne des notes)"
                 />
               </div>
               <div class="grid gap-3 sm:grid-cols-3">
@@ -707,7 +774,17 @@ async function downloadDeliverable() {
                   :key="row.id"
                   class="ring-default flex flex-wrap items-center gap-2 rounded-lg px-3 py-2 ring-1"
                 >
-                  <span class="min-w-0 flex-1 truncate text-sm font-medium">{{ templateTitle(row.template_key) }}</span>
+                  <div class="min-w-0 flex-1">
+                    <div class="truncate text-sm font-medium">{{ templateTitle(row.template_key) }}</div>
+                    <div
+                      v-if="row.title?.trim() || row.subtitle?.trim()"
+                      class="text-muted truncate text-xs"
+                    >
+                      <span v-if="row.title?.trim()">{{ row.title.trim() }}</span>
+                      <span v-if="row.title?.trim() && row.subtitle?.trim()"> · </span>
+                      <span v-if="row.subtitle?.trim()">{{ row.subtitle.trim() }}</span>
+                    </div>
+                  </div>
                   <div class="flex shrink-0 gap-1">
                     <UButton
                       size="xs"

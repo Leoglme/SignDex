@@ -19,6 +19,8 @@ type VariantDraft = {
   photo1_slot: ImageSlotSource
   photo2_slot: ImageSlotSource
   show_side_photo: boolean
+  show_right_logo: boolean
+  show_notes: boolean
 }
 
 const attachModalOpen = ref(false)
@@ -65,6 +67,8 @@ function makeDefaultVariant(template_key: string): VariantDraft {
     photo1_slot: 'default',
     photo2_slot: 'default',
     show_side_photo: true,
+    show_right_logo: true,
+    show_notes: false,
   }
 }
 
@@ -127,6 +131,8 @@ async function attachAndRegenerate() {
       photo1_slot: v.photo1_slot,
       photo2_slot: v.photo2_slot,
       show_side_photo: v.show_side_photo ?? true,
+      show_right_logo: v.show_right_logo ?? true,
+      show_notes: v.show_notes ?? false,
     }))
 
     const client = await apiFetch<{ id: number; name: string }>(`/clients/${it.clientId}`)
@@ -183,7 +189,42 @@ async function refresh() {
   }
 }
 
+async function regenerateOrganization(it: DeliverableIndexItem) {
+  generating.value = it.zipPath
+  error.value = null
+  try {
+    const base = useApiBase()
+    const res = await fetch(`${base}/organizations/${it.clientId}/deliverable`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}',
+    })
+    if (!res.ok) throw new Error(await res.text())
+    const bytes = new Uint8Array(await (await res.blob()).arrayBuffer())
+    const root = await ensureDeliverablesRoot()
+    const ts = new Date().toISOString().replaceAll(':', '-')
+    const safeName = it.clientName.replaceAll(' ', '_')
+    const filePath = await join(root, `signdex_organization_${safeName}_${ts}.zip`)
+    await writeFile(filePath, bytes)
+    await appendDeliverableIndex({
+      kind: 'organization',
+      service: 'organization',
+      clientId: it.clientId,
+      clientName: it.clientName,
+      createdAtIso: new Date().toISOString(),
+      zipPath: filePath,
+    })
+    await open(toFileUrl(filePath))
+    await refresh()
+  } catch (e: any) {
+    error.value = e?.message || String(e)
+  } finally {
+    generating.value = null
+  }
+}
+
 async function regenerate(it: DeliverableIndexItem) {
+  if (it.kind === 'organization') return regenerateOrganization(it)
   if (!it.variants?.length) return
   generating.value = it.zipPath
   error.value = null
@@ -218,6 +259,8 @@ async function regenerate(it: DeliverableIndexItem) {
       createdAtIso: new Date().toISOString(),
       zipPath: filePath,
       variants: it.variants,
+      ...(it.title?.trim() ? { title: it.title.trim() } : {}),
+      ...(it.subtitle?.trim() ? { subtitle: it.subtitle.trim() } : {}),
     })
 
     await open(toFileUrl(filePath))
@@ -260,7 +303,10 @@ await refresh()
             <template #header>
               <div class="flex items-center justify-between gap-3">
                 <div class="min-w-0">
-                  <div class="truncate font-semibold">{{ it.clientName }}</div>
+                  <div class="flex items-center gap-2">
+                    <span class="truncate font-semibold">{{ it.clientName }}</span>
+                    <UBadge v-if="it.kind === 'organization'" color="primary" variant="soft" size="sm">Organisation</UBadge>
+                  </div>
                   <div class="text-muted truncate text-sm">{{ new Date(it.createdAtIso).toLocaleString() }}</div>
                 </div>
                 <div class="flex items-center gap-2">
@@ -268,14 +314,14 @@ await refresh()
                   <UButton
                     color="primary"
                     variant="soft"
-                    :disabled="!it.variants?.length"
+                    :disabled="it.kind !== 'organization' && !it.variants?.length"
                     :loading="generating === it.zipPath"
                     @click="regenerate(it)"
                   >
                     Régénérer
                   </UButton>
                   <UButton
-                    v-if="!it.variants?.length"
+                    v-if="it.kind !== 'organization' && !it.variants?.length"
                     color="neutral"
                     variant="soft"
                     :loading="attaching === it.zipPath"
@@ -287,7 +333,7 @@ await refresh()
               </div>
             </template>
             <div class="text-muted break-all text-xs">{{ it.zipPath }}</div>
-            <div v-if="!it.variants?.length" class="text-muted mt-2 text-xs">
+            <div v-if="it.kind !== 'organization' && !it.variants?.length" class="text-muted mt-2 text-xs">
               Ancien livrable : la configuration n’a pas été enregistrée, impossible de régénérer automatiquement.
             </div>
           </UCard>
@@ -333,6 +379,21 @@ await refresh()
                 v-if="v.template_key === 'signature-v2'"
                 v-model="v.show_side_photo"
                 label="Afficher la vignette à droite"
+              />
+              <UCheckbox
+                v-if="v.template_key === 'signature-v6' || v.template_key === 'signature-v8'"
+                v-model="v.show_side_photo"
+                label="Portrait à gauche (photo 1)"
+              />
+              <UCheckbox
+                v-if="v.template_key === 'signature-v6' || v.template_key === 'signature-v8'"
+                v-model="v.show_right_logo"
+                label="Logo à droite (2e visuel)"
+              />
+              <UCheckbox
+                v-if="v.template_key === 'signature-v1' || v.template_key === 'signature-v2'"
+                v-model="v.show_notes"
+                label="Afficher l'adresse (notes)"
               />
             </div>
 

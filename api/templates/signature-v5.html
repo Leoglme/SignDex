@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Signature mail — v5 logo & filet doré</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap">
+</head>
+<body>
+  <!--
+    Layout : [logo] | [filet vertical (color_primary)] | [bloc texte]
+    Largeur ~400px. Compatible Gmail / Apple Mail / Outlook web (tables + styles inline).
+    La couleur dorée vient de client.color_primary (à renseigner sur la fiche client).
+  -->
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background-color:#ffffff;">
+    <tr>
+      <td width="100" style="width:100px;padding:6px 13px 6px 0;vertical-align:middle;text-align:center;mso-line-height-rule:exactly;font-size:0;line-height:0;">
+        <img src="{{ client.logo_url or '' }}" alt="{{ client.name or '' }}" width="92" height="92" style="display:block;width:92px;height:92px;border:0;object-fit:contain;">
+      </td>
+      <td width="2" style="width:2px;padding:0;vertical-align:middle;mso-line-height-rule:exactly;font-size:0;line-height:0;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+          <tr>
+            <td width="2" height="82" style="width:2px;height:82px;background-color:{{ client.color_primary or '#c9a961' }};font-size:0;line-height:0;">&nbsp;</td>
+          </tr>
+        </table>
+      </td>
+      <td style="padding:4px 0 4px 18px;vertical-align:middle;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+          <tr>
+            <td style="font-size:18px;font-weight:700;line-height:1.2;color:#141414;padding:0;letter-spacing:0.2px;">
+              {% if client.firstname and client.lastname %}{{ client.firstname }} {{ client.lastname|upper }}{% elif client.full_name %}{{ client.full_name }}{% else %}{{ client.name or '' }}{% endif %}
+            </td>
+          </tr>
+          {% if client.subtitle %}
+          <tr>
+            <td style="font-size:13px;font-weight:400;line-height:1.3;color:#999999;padding-top:1px;">
+              {{ client.subtitle }}
+            </td>
+          </tr>
+          {% endif %}
+          {% if (client.firstname or client.lastname or client.full_name) and client.name %}
+          <tr>
+            <td style="font-size:13px;font-weight:700;line-height:1.3;color:{{ client.color_primary or '#c9a961' }};padding-top:1px;">
+              {{ client.name }}
+            </td>
+          </tr>
+          {% endif %}
+          {% if client.email %}
+          <tr>
+            <td style="font-size:12px;font-weight:400;line-height:1.5;color:#999999;padding-top:7px;">
+              <a href="mailto:{{ client.email }}" style="color:#999999;text-decoration:none;">{{ client.email }}</a>
+            </td>
+          </tr>
+          {% endif %}
+          {% if client.phone_primary_display %}
+          <tr>
+            <td style="font-size:12px;font-weight:400;line-height:1.5;color:#999999;padding-top:2px;">
+              <a href="tel:{{ client.phone_primary_raw or '' }}" style="color:#999999;text-decoration:none;">{{ client.phone_primary_display }}</a>
+            </td>
+          </tr>
+          {% endif %}
+          {% if client.phone_secondary_display %}
+          <tr>
+            <td style="font-size:12px;font-weight:400;line-height:1.5;color:#999999;padding-top:2px;">
+              <a href="tel:{{ client.phone_secondary_raw or '' }}" style="color:#999999;text-decoration:none;">{{ client.phone_secondary_display }}</a>
+            </td>
+          </tr>
+          {% endif %}
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

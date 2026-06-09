@@ -17,6 +17,8 @@ class Client(Base):
     # `name` = en général le **nom d'entreprise** (company / brand). Reste unique pour identifier la fiche.
     name: Mapped[str] = mapped_column(String(255), unique=True)
     subtitle: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # Fonction / titre affiché en signature (ex. CEO & co-fondateur). Si vide, les templates utilisent `subtitle`.
+    title: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     # Identité de la personne contact (facultatif). Permet de générer une signature avec un nom propre
     # (Prénom Nom) tout en gardant `name` comme nom d'entreprise pour les autres supports (cartes, flyers…).

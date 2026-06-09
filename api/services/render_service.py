@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+import base64
 import io
+import mimetypes
 import re
 import tempfile
+import uuid
+import urllib.error
+import urllib.request
 from dataclasses import dataclass
 from typing import Any, Literal
 from datetime import datetime
@@ -232,6 +237,10 @@ class RenderOverrides:
     photo1_url: str | None = None
     photo2_url: str | None = None
     show_side_photo: bool = True
+    show_right_logo: bool = True
+    show_notes: bool = False
+    title: str | None = None
+    subtitle: str | None = None
     color_primary: str | None = None
     color_secondary: str | None = None
 
@@ -261,10 +270,15 @@ def build_client_render_dict(client: Client) -> dict[str, Any]:
     firstname = (client.firstname or "").strip()
     lastname = (client.lastname or "").strip()
     full_name = " ".join(p for p in (firstname, lastname) if p)
+    title = (client.title or "").strip()
+    subtitle = (client.subtitle or "").strip()
+    role_line = title or subtitle
 
     return {
         "name": client.name,
-        "subtitle": client.subtitle,
+        "title": title or None,
+        "subtitle": subtitle or None,
+        "role_line": role_line or None,
         "firstname": firstname,
         "lastname": lastname,
         # `full_name` = "Prénom Nom" si renseignés ; sinon vide. Les templates qui veulent le contact humain
@@ -294,6 +308,8 @@ def build_client_render_dict(client: Client) -> dict[str, Any]:
         "photo1_url": client.photo1_url,
         "photo2_url": client.photo2_url,
         "show_side_photo": True,
+        "show_right_logo": True,
+        "show_notes": False,
         "notes": client.notes,
         "address": _address_first_line(client.notes),
     }
@@ -318,6 +334,16 @@ def apply_render_overrides(data: dict[str, Any], overrides: RenderOverrides | No
     if overrides.photo2_url is not None:
         out["photo2_url"] = overrides.photo2_url or None
     out["show_side_photo"] = overrides.show_side_photo
+    out["show_right_logo"] = overrides.show_right_logo
+    out["show_notes"] = overrides.show_notes
+    if overrides.title is not None:
+        out["title"] = (overrides.title or "").strip() or None
+    if overrides.subtitle is not None:
+        out["subtitle"] = (overrides.subtitle or "").strip() or None
+    if overrides.title is not None or overrides.subtitle is not None:
+        t = (out.get("title") or "").strip()
+        s = (out.get("subtitle") or "").strip()
+        out["role_line"] = t or s or None
     return out
 
 
@@ -326,13 +352,15 @@ def render_signature_html(
     template_html: str,
     client: Client,
     overrides: RenderOverrides | None = None,
+    extra: dict[str, Any] | None = None,
 ) -> str:
+    """`extra` = variables Jinja de premier niveau (ex. `chambers_visible` pour les templates LEXIAL)."""
     jinja_src = _to_jinja(template_html)
     ctx = apply_render_overrides(build_client_render_dict(client), overrides)
     apply_v4_corner_asset_urls(ctx)
     env = Environment(undefined=StrictUndefined, autoescape=False)
     tpl = env.from_string(jinja_src)
-    return tpl.render(client=ctx)
+    return tpl.render(client=ctx, **(extra or {}))
 
 
 def render_jinja_html(
@@ -381,6 +409,10 @@ def render_overrides_from_image_slots(
     photo1_slot: ImageSlotSource = "default",
     photo2_slot: ImageSlotSource = "default",
     show_side_photo: bool = True,
+    show_right_logo: bool = True,
+    show_notes: bool = False,
+    title: str | None = None,
+    subtitle: str | None = None,
     color_primary: str | None = None,
     color_secondary: str | None = None,
 ) -> RenderOverrides | None:
@@ -403,7 +435,16 @@ def render_overrides_from_image_slots(
     o_c2 = _normalize_color_override(color_secondary, client.color_secondary)
     has_img = any(x is not None for x in (o_logo, o_p1, o_p2))
     has_color = o_c1 is not None or o_c2 is not None
-    if not swap_colors and not has_img and not has_color and show_side_photo:
+    has_text = title is not None or subtitle is not None
+    if (
+        not swap_colors
+        and not has_img
+        and not has_color
+        and show_side_photo
+        and show_right_logo
+        and not show_notes
+        and not has_text
+    ):
         return None
     return RenderOverrides(
         swap_colors=swap_colors,
@@ -411,6 +452,10 @@ def render_overrides_from_image_slots(
         photo1_url=o_p1,
         photo2_url=o_p2,
         show_side_photo=show_side_photo,
+        show_right_logo=show_right_logo,
+        show_notes=show_notes,
+        title=title,
+        subtitle=subtitle,
         color_primary=o_c1,
         color_secondary=o_c2,
     )
@@ -424,6 +469,176 @@ def _signature_document_body_inner_html(rendered_full_document: str) -> str:
         if inner and inner.strip():
             return inner
     return rendered_full_document
+
+
+def _mime_type_for_image_url(url: str, content_type: str | None) -> str:
+    ct = (content_type or "").split(";")[0].strip().lower()
+    if ct.startswith("image/"):
+        return ct
+    guessed, _ = mimetypes.guess_type(urlparse(url).path)
+    if guessed and guessed.startswith("image/"):
+        return guessed
+    return "image/png"
+
+
+def _fetch_image_bytes(url: str, *, timeout_s: float = 25.0) -> tuple[bytes, str] | None:
+    if not url or url.startswith("data:") or not url.startswith(("http://", "https://")):
+        return None
+    headers = {"User-Agent": "SignDex/1.0 (Apple Mail signature embed)"}
+    try:
+        req = urllib.request.Request(url, method="GET", headers=headers)
+        with urllib.request.urlopen(req, timeout=timeout_s) as r:
+            data = r.read()
+            mime = _mime_type_for_image_url(url, r.headers.get("Content-Type"))
+        if data:
+            return data, mime
+    except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, OSError):
+        pass
+    return None
+
+
+def _int_img_dimension(value: object) -> int | None:
+    if value is None:
+        return None
+    s = str(value).strip().lower().removesuffix("px")
+    try:
+        n = int(float(s))
+        return n if n > 0 else None
+    except ValueError:
+        return None
+
+
+def _img_display_dimensions(img) -> tuple[int | None, int | None]:
+    w = _int_img_dimension(img.get("width"))
+    h = _int_img_dimension(img.get("height"))
+    if w or h:
+        return w, h
+    style = img.get("style") or ""
+    m_w = re.search(r"width:\s*(\d+(?:\.\d+)?)\s*px", style, re.IGNORECASE)
+    m_h = re.search(r"height:\s*(\d+(?:\.\d+)?)\s*px", style, re.IGNORECASE)
+    if m_w:
+        w = int(float(m_w.group(1)))
+    if m_h:
+        h = int(float(m_h.group(1)))
+    return w, h
+
+
+def _img_thumbnail_max_size(
+    img,
+    *,
+    retina: int = 2,
+    abs_cap: int = 256,
+    default_edge: int = 128,
+) -> tuple[int, int]:
+    """Taille max de redimensionnement (px) dérivée des attributs width/height du template."""
+    w, h = _img_display_dimensions(img)
+    if w or h:
+        base_w = w or h or default_edge
+        base_h = h or w or default_edge
+        max_w = min(max(base_w * retina, 24), abs_cap)
+        max_h = min(max(base_h * retina, 24), abs_cap)
+        return max_w, max_h
+    return min(default_edge * retina, abs_cap), min(default_edge * retina, abs_cap)
+
+
+def _image_has_visible_alpha(img: Image.Image) -> bool:
+    if img.mode != "RGBA":
+        return False
+    alpha = img.getchannel("A")
+    lo, hi = alpha.getextrema()
+    return lo < 255
+
+
+def _optimize_image_bytes_for_signature(
+    raw: bytes,
+    mime: str,
+    *,
+    max_w: int,
+    max_h: int,
+) -> tuple[bytes, str]:
+    """Réduit poids et dimensions pour un `.mailsignature` léger (< ~300 Ko total visé)."""
+    img = Image.open(io.BytesIO(raw))
+    if img.mode not in ("RGB", "RGBA"):
+        img = img.convert("RGBA" if "A" in img.getbands() else "RGB")
+    img.thumbnail((max_w, max_h), Image.Resampling.LANCZOS)
+
+    out = io.BytesIO()
+    if _image_has_visible_alpha(img):
+        img.save(out, format="PNG", optimize=True)
+        return out.getvalue(), "image/png"
+
+    rgb = img.convert("RGB")
+    rgb.save(out, format="JPEG", quality=85, optimize=True, progressive=True)
+    return out.getvalue(), "image/jpeg"
+
+
+def embed_remote_images_as_base64_html(html: str, *, timeout_s: float = 25.0) -> str:
+    """Remplace les `src` http(s) des `<img>` par des data URI optimisées pour Apple Mail."""
+    if not html or "<img" not in html.lower():
+        return html
+    wrap = BeautifulSoup(f'<div data-signdex-root="1">{html}</div>', "html.parser")
+    root = wrap.find(attrs={"data-signdex-root": "1"})
+    if root is None:
+        return html
+    cache: dict[str, str] = {}
+    for img in root.find_all("img"):
+        src = (img.get("src") or "").strip()
+        if not src or src.startswith("data:"):
+            continue
+        max_w, max_h = _img_thumbnail_max_size(img)
+        cache_key = f"{src}|{max_w}x{max_h}"
+        if cache_key in cache:
+            img["src"] = cache[cache_key]
+            continue
+        fetched = _fetch_image_bytes(src, timeout_s=timeout_s)
+        if not fetched:
+            continue
+        raw, mime = fetched
+        try:
+            raw, mime = _optimize_image_bytes_for_signature(raw, mime, max_w=max_w, max_h=max_h)
+        except OSError:
+            continue
+        data_uri = f"data:{mime};base64,{base64.b64encode(raw).decode('ascii')}"
+        cache[cache_key] = data_uri
+        img["src"] = data_uri
+    return root.decode_contents()
+
+
+def build_mailsignature_document(rendered_signature_full_html: str) -> str:
+    """Fichier `.mailsignature` pour Apple Mail : en-têtes MIME + corps HTML de la signature.
+
+    Apple Mail stocke chaque signature comme un fragment MIME. On encode le corps en 8bit (UTF-8 brut,
+    lisible et copiable tel quel) plutôt qu'en quoted-printable, et on garde un Message-Id unique.
+    Le client remplace l'intégralité du contenu du fichier UUID existant par celui-ci (voir LISEZMOI).
+
+    Les images distantes (logo, portrait, icônes) sont intégrées en base64 pour un affichage fiable
+    sans dépendre de Supabase ou d'Internet au moment de l'aperçu signature.
+    """
+    inner = _signature_document_body_inner_html(rendered_signature_full_html)
+    inner = embed_remote_images_as_base64_html(inner)
+    message_id = f"<{uuid.uuid4()}@signdex>"
+    headers = (
+        "Content-Transfer-Encoding: 8bit\n"
+        "Content-Type: text/html;\n"
+        "\tcharset=utf-8\n"
+        f"Message-Id: {message_id}\n"
+        "Mime-Version: 1.0\n"
+    )
+    body = (
+        '<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head>'
+        f"<body>{inner}</body></html>"
+    )
+    return f"{headers}\n{body}"
+
+
+def encode_mailsignature_document(document: str) -> bytes:
+    """UTF-8 avec fins de ligne LF uniquement (requis par Apple Mail sur macOS)."""
+    return document.replace("\r\n", "\n").replace("\r", "\n").encode("utf-8")
+
+
+def write_mailsignature_file(path: Path, document: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(encode_mailsignature_document(document))
 
 
 def _sender_initials(name: str) -> str:
@@ -586,4 +801,97 @@ def png_to_jpg_bytes(*, png_bytes: bytes, quality: int | None = None) -> bytes:
         subsampling=0 if q >= 90 else 2,
     )
     return out.getvalue()
+
+
+@dataclass(frozen=True)
+class OrgSigJob:
+    """Un rendu à produire pour le livrable organisation (1 membre × 1 bureau)."""
+
+    rendered_html: str
+    sender_name: str
+    sender_email: str | None = None
+
+
+def _fr_date_hint(now: datetime) -> str:
+    months_fr = (
+        "janv.", "févr.", "mars", "avr.", "mai", "juin",
+        "juil.", "août", "sept.", "oct.", "nov.", "déc.",
+    )
+    weekdays_fr = ("lun.", "mar.", "mer.", "jeu.", "ven.", "sam.", "dim.")
+    return (
+        f"{weekdays_fr[now.weekday()]} {now.day} {months_fr[now.month - 1]} {now.year}, "
+        f"{now.hour}:{now.minute:02d}"
+    )
+
+
+def render_org_assets(jobs: list[OrgSigJob]) -> list[tuple[bytes, bytes]]:
+    """Pour chaque job : (PNG signature, PNG aperçu « faux mail »).
+
+    Réutilise UN SEUL navigateur Chromium pour tous les rendus : indispensable pour générer
+    en un clic des dizaines de signatures (sinon 1 lancement de navigateur par image → minutes).
+    """
+    if not jobs:
+        return []
+    settings = get_settings()
+    dpr = settings.signdex_export_device_scale
+    wrap_path = _ASSETS_DIR / "fake_mail_preview.html"
+    if not wrap_path.exists():
+        raise FileNotFoundError(f"Gabarit aperçu mail manquant: {wrap_path}")
+    wrap_doc = wrap_path.read_text(encoding="utf-8")
+    date_hint = _fr_date_hint(datetime.now())
+    subject = "Point sur le projet — suite à notre échange"
+
+    results: list[tuple[bytes, bytes]] = []
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch()
+        try:
+            for job in jobs:
+                # --- PNG signature (table racine) ---
+                page = browser.new_page(viewport={"width": 960, "height": 640}, device_scale_factor=dpr)
+                try:
+                    page.set_content(job.rendered_html, wait_until="networkidle")
+                    try:
+                        page.evaluate("async () => { if (document.fonts) await document.fonts.ready; }")
+                    except Exception:
+                        pass
+                    page.add_style_tag(content="html,body{margin:0;padding:0;}")
+                    pres = page.locator("body > table[role='presentation']")
+                    if pres.count() > 0:
+                        target = pres.first
+                    else:
+                        tabs = page.locator("body > table")
+                        target = tabs.first if tabs.count() > 0 else page.locator("body")
+                    target.wait_for(state="visible", timeout=30_000)
+                    sig_png = _png_downscale_from_device_scale(target.screenshot(type="png"), dpr)
+                finally:
+                    page.close()
+
+                # --- PNG aperçu « faux mail » ---
+                inner_sig = _signature_document_body_inner_html(job.rendered_html)
+                email_display = (job.sender_email or "vous@exemple.fr").strip() or "vous@exemple.fr"
+                doc = wrap_doc
+                doc = doc.replace("%%SIGNATURE_INNER_HTML%%", inner_sig)
+                doc = doc.replace("%%SENDER_INITIALS%%", escape(_sender_initials(job.sender_name)))
+                doc = doc.replace("%%SENDER_NAME%%", escape((job.sender_name or "").strip() or "Expéditeur"))
+                doc = doc.replace("%%SENDER_EMAIL%%", escape(email_display))
+                doc = doc.replace("%%DATE_HINT%%", escape(date_hint))
+                doc = doc.replace("%%SUBJECT_LINE%%", escape(subject))
+                page = browser.new_page(viewport={"width": 920, "height": 1120}, device_scale_factor=dpr)
+                try:
+                    page.set_content(doc, wait_until="networkidle")
+                    try:
+                        page.evaluate("async () => { if (document.fonts) await document.fonts.ready; }")
+                    except Exception:
+                        pass
+                    page.add_style_tag(content="html,body{margin:0;}")
+                    root = page.locator("#signdex-fake-mail-root")
+                    root.wait_for(state="visible", timeout=30_000)
+                    mail_png = _png_downscale_from_device_scale(root.screenshot(type="png"), dpr)
+                finally:
+                    page.close()
+
+                results.append((sig_png, mail_png))
+        finally:
+            browser.close()
+    return results
 

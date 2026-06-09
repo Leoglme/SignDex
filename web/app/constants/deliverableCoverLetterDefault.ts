@@ -13,6 +13,23 @@ Bonne soirée,
 Léo Guillaume
 dibodev.fr`
 
+/** Variante “client Apple Mail” : explique les deux formats disponibles (modifiable dans l’app). */
+export const DELIVERABLE_COVER_LETTER_APPLE_MAIL = `Bonjour,
+
+Votre livrable est prêt. Comme vous utilisez Apple Mail, vous avez le choix entre deux formats :
+
+1) La version HTML (dossier HTML)
+À privilégier si vous voulez des liens cliquables (site, e-mail, téléphone, réseaux sociaux). Vous l’ouvrez dans Safari, vous copiez l’ensemble, puis vous le collez dans Apple Mail (Réglages → Signatures).
+
+2) La version au format Apple (dossier apple-mail)
+Le principe : créer une signature vide dans Apple Mail, puis coller le contenu du fichier « signature.mailsignature » fourni dans le fichier de signature de votre Mac. Toute la marche à suivre, pas à pas, est expliquée dans le fichier LISEZMOI-apple-mail.txt.
+
+N’hésitez pas à revenir vers moi pour la moindre demande de retouche ou adaptation.
+
+Bonne journée,
+Léo Guillaume
+dibodev.fr`
+
 /** Variante “merci + recommandation” (modifiable dans l’app). */
 export const DELIVERABLE_COVER_LETTER_REFERRAL = `Bonjour,
 

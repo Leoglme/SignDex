@@ -17,7 +17,7 @@
             </a>
           </td>
           <td style="vertical-align:middle;width:100%;">
-            <p style="margin:0 0 2px;font-family:'DM Sans',sans-serif;font-size:18px;font-weight:600;letter-spacing:-0.02em;color:#1a3545;line-height:1.2;">HelloPropre</p>
+            <p style="margin:0 0 2px;font-family:'DM Sans',sans-serif;font-size:18px;font-weight:600;letter-spacing:-0.02em;color:#1a3545;line-height:1.2;">{{ client.title or client.name }}</p>
             {% if client.subtitle %}
             <p style="margin:0;font-size:11px;font-weight:300;color:#6a8a9a;letter-spacing:1.5px;text-transform:uppercase;line-height:1.4;">{{ client.subtitle }}</p>
             {% endif %}
@@ -53,6 +53,10 @@
             <a href="https://www.hellopropre.com" style="color:#4e8baa;text-decoration:none;font-weight:500;">www.hellopropre.com</a>
             &nbsp;|&nbsp;
             <a href="mailto:contact@hellopropre.com" style="color:#4e8baa;text-decoration:none;font-weight:500;">contact@hellopropre.com</a>
+            {% if client.show_notes and client.address %}
+            <br>
+            <span style="color:#6a8a9a;">{{ client.address }}</span>
+            {% endif %}
           </td>
           {% if client.youtube_url or client.linkedin_url or client.instagram_url or client.facebook_url or client.tiktok_url %}
           <td style="vertical-align:middle;text-align:right;white-space:nowrap;padding-left:12px;">

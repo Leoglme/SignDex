@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { DELIVERABLE_COVER_LETTER_DEFAULT, DELIVERABLE_COVER_LETTER_REFERRAL } from '~/constants/deliverableCoverLetterDefault'
+import { DELIVERABLE_COVER_LETTER_APPLE_MAIL, DELIVERABLE_COVER_LETTER_DEFAULT, DELIVERABLE_COVER_LETTER_REFERRAL } from '~/constants/deliverableCoverLetterDefault'
 
 const STORAGE_KEY = 'signdex-deliverable-cover-letter'
 
 const message = ref(DELIVERABLE_COVER_LETTER_DEFAULT)
 const toast = useToast()
 const copying = ref(false)
-const preset = ref<'standard' | 'referral'>('standard')
+const preset = ref<'standard' | 'referral' | 'apple-mail'>('standard')
 
 onMounted(() => {
   try {
@@ -51,9 +51,15 @@ function resetDefault() {
   toast.add({ title: 'Texte par défaut restauré', color: 'neutral' })
 }
 
-function applyPreset(p: 'standard' | 'referral') {
+const PRESET_MESSAGES: Record<'standard' | 'referral' | 'apple-mail', string> = {
+  'standard': DELIVERABLE_COVER_LETTER_DEFAULT,
+  'referral': DELIVERABLE_COVER_LETTER_REFERRAL,
+  'apple-mail': DELIVERABLE_COVER_LETTER_APPLE_MAIL,
+}
+
+function applyPreset(p: 'standard' | 'referral' | 'apple-mail') {
   preset.value = p
-  message.value = p === 'referral' ? DELIVERABLE_COVER_LETTER_REFERRAL : DELIVERABLE_COVER_LETTER_DEFAULT
+  message.value = PRESET_MESSAGES[p]
   toast.add({ title: 'Modèle appliqué', color: 'neutral' })
 }
 </script>
@@ -100,6 +106,14 @@ function applyPreset(p: 'standard' | 'referral') {
             @click="applyPreset('referral')"
           >
             Modèle “merci + recommandation”
+          </UButton>
+          <UButton
+            color="neutral"
+            variant="soft"
+            :disabled="preset === 'apple-mail'"
+            @click="applyPreset('apple-mail')"
+          >
+            Modèle “client Apple Mail”
           </UButton>
         </div>
         <UFormField label="Corps du message" class="flex min-h-0 flex-1 flex-col">

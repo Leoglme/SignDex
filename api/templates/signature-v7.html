@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Signature mail — v7 luxe épuré</title>
+</head>
+<body style="margin:0;padding:0;">
+  {#
+    DA « luxe épuré » (chauffeur premium / corporate suisse) : monochrome near-black + gris,
+    un seul accent = client.color_primary. Police Helvetica système (clin d'œil suisse + fiable Apple Mail,
+    aucune dépendance Google Fonts). Tables + styles inline (Gmail / Apple Mail / Outlook).
+
+    Toggle images :
+      - le logo s'affiche à gauche dès que logo_url est présent ;
+      - le portrait (photo1) s'affiche à droite si show_side_photo ET photo1_url.
+  #}
+  {% set accent = client.color_primary or '#1a1a1a' %}
+  {% set ink = '#111111' %}
+  {% set font = "'Helvetica Neue',Helvetica,Arial,sans-serif" %}
+  {% set display_name = client.full_name if client.full_name else client.name %}
+  {% set show_photo = client.show_side_photo and client.photo1_url %}
+
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;font-family:{{ font }};background-color:#ffffff;">
+    <tr>
+
+      {# ---------- Logo (gauche, toujours si présent) ---------- #}
+      {% if client.logo_url %}
+      <td valign="middle" style="vertical-align:middle;padding:2px 22px 2px 0;">
+        {% if client.website_url %}<a href="{{ client.website_url }}" target="_blank" rel="noopener" style="text-decoration:none;">{% endif %}
+        <img src="{{ client.logo_url }}" alt="{{ client.name or '' }}" width="100" style="display:block;width:100px;height:auto;max-width:100px;border:0;outline:none;">
+        {% if client.website_url %}</a>{% endif %}
+      </td>
+      <td valign="middle" style="width:1px;padding:0;vertical-align:middle;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;"><tr>
+          <td style="width:1px;height:94px;background-color:#e6e6e6;font-size:0;line-height:0;">&nbsp;</td>
+        </tr></table>
+      </td>
+      {% endif %}
+
+      {# ---------- Bloc texte ---------- #}
+      <td valign="middle" style="vertical-align:middle;padding:2px 0 2px {% if client.logo_url %}24px{% else %}0{% endif %};">
+
+        <p style="margin:0 0 3px;font-family:{{ font }};font-size:20px;font-weight:bold;color:{{ ink }};letter-spacing:.2px;line-height:1.15;">{{ display_name }}</p>
+
+        {% if client.role_line or client.name %}
+        <p style="margin:0 0 12px;font-family:{{ font }};font-size:11px;line-height:1.4;text-transform:uppercase;letter-spacing:1.8px;color:#8a8a8a;">
+          {%- if client.role_line %}{{ client.role_line }}{% endif -%}
+          {%- if client.role_line and client.name %}<span style="color:#cfcfcf;">&nbsp;&middot;&nbsp;</span>{% endif -%}
+          {%- if client.name %}<span style="color:{{ accent }};font-weight:bold;">{{ client.name }}</span>{% endif -%}
+        </p>
+        {% endif %}
+
+        {% if client.phone_primary_display or client.phone_secondary_display %}
+        <p style="margin:0 0 3px;font-family:{{ font }};font-size:13px;line-height:1.5;color:#444444;">
+          {%- if client.phone_primary_display -%}<a href="tel:{{ client.phone_primary_raw or '' }}" style="color:#444444;text-decoration:none;">{{ client.phone_primary_display }}</a>{%- endif -%}
+          {%- if client.phone_primary_display and client.phone_secondary_display -%}<span style="color:#cfcfcf;">&nbsp;&middot;&nbsp;</span>{%- endif -%}
+          {%- if client.phone_secondary_display -%}<a href="tel:{{ client.phone_secondary_raw or '' }}" style="color:#444444;text-decoration:none;">{{ client.phone_secondary_display }}</a>{%- endif -%}
+        </p>
+        {% endif %}
+
+        {% if client.email %}
+        <p style="margin:0 0 3px;font-family:{{ font }};font-size:13px;line-height:1.5;color:#444444;"><a href="mailto:{{ client.email }}" style="color:#444444;text-decoration:none;">{{ client.email }}</a></p>
+        {% endif %}
+
+        {% if client.website_url or client.website_label %}
+        <p style="margin:0 0 3px;font-family:{{ font }};font-size:13px;line-height:1.5;"><a href="{{ client.website_url or '' }}" target="_blank" rel="noopener" style="color:{{ accent }};text-decoration:none;font-weight:bold;letter-spacing:.02em;">{{ client.website_label or client.website_url }}</a></p>
+        {% endif %}
+
+        {% if client.address %}
+        <p style="margin:0;font-family:{{ font }};font-size:12px;line-height:1.5;color:#999999;">{{ client.address }}</p>
+        {% endif %}
+
+        {# ---------- Réseaux sociaux (optionnel) ---------- #}
+        {% if client.linkedin_url or client.instagram_url or client.facebook_url or client.tiktok_url or client.youtube_url %}
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;margin-top:14px;"><tr>
+
+          {% if client.linkedin_url %}
+          <td style="padding-right:8px;vertical-align:middle;">
+            {% if client.social_show_slug_labels and client.linkedin_slug %}
+            <a href="{{ client.linkedin_url }}" title="LinkedIn" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;border:1px solid #e6e6e6;border-radius:15px;background-color:#ffffff;vertical-align:middle;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;"><tr>
+                <td style="vertical-align:middle;padding:5px 3px 5px 9px;line-height:0;font-size:0;"><img src="https://img.icons8.com/ios-filled/48/1a1a1a/linkedin.png" alt="" width="14" height="14" style="width:14px;height:14px;border:0;display:block;"></td>
+                <td style="vertical-align:middle;padding:6px 11px 6px 5px;font-family:{{ font }};font-size:11px;color:#555555;font-weight:500;line-height:1.2;">{{ client.linkedin_slug }}</td>
+              </tr></table>
+            </a>
+            {% else %}
+            <a href="{{ client.linkedin_url }}" title="LinkedIn" target="_blank" rel="noopener" style="display:inline-block;width:28px;height:28px;line-height:28px;text-align:center;border:1px solid #e6e6e6;border-radius:14px;background-color:#ffffff;text-decoration:none;vertical-align:middle;"><img src="https://img.icons8.com/ios-filled/48/1a1a1a/linkedin.png" alt="" width="14" height="14" style="width:14px;height:14px;border:0;display:inline-block;vertical-align:middle;"></a>
+            {% endif %}
+          </td>
+          {% endif %}
+
+          {% if client.instagram_url %}
+          <td style="padding-right:8px;vertical-align:middle;">
+            {% if client.social_show_slug_labels and client.instagram_slug %}
+            <a href="{{ client.instagram_url }}" title="Instagram" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;border:1px solid #e6e6e6;border-radius:15px;background-color:#ffffff;vertical-align:middle;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;"><tr>
+                <td style="vertical-align:middle;padding:5px 3px 5px 9px;line-height:0;font-size:0;"><img src="https://img.icons8.com/ios-filled/48/1a1a1a/instagram-new.png" alt="" width="14" height="14" style="width:14px;height:14px;border:0;display:block;"></td>
+                <td style="vertical-align:middle;padding:6px 11px 6px 5px;font-family:{{ font }};font-size:11px;color:#555555;font-weight:500;line-height:1.2;">{{ client.instagram_slug }}</td>
+              </tr></table>
+            </a>
+            {% else %}
+            <a href="{{ client.instagram_url }}" title="Instagram" target="_blank" rel="noopener" style="display:inline-block;width:28px;height:28px;line-height:28px;text-align:center;border:1px solid #e6e6e6;border-radius:14px;background-color:#ffffff;text-decoration:none;vertical-align:middle;"><img src="https://img.icons8.com/ios-filled/48/1a1a1a/instagram-new.png" alt="" width="14" height="14" style="width:14px;height:14px;border:0;display:inline-block;vertical-align:middle;"></a>
+            {% endif %}
+          </td>
+          {% endif %}
+
+          {% if client.facebook_url %}
+          <td style="padding-right:8px;vertical-align:middle;">
+            {% if client.social_show_slug_labels and client.facebook_slug %}
+            <a href="{{ client.facebook_url }}" title="Facebook" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;border:1px solid #e6e6e6;border-radius:15px;background-color:#ffffff;vertical-align:middle;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;"><tr>
+                <td style="vertical-align:middle;padding:5px 3px 5px 9px;line-height:0;font-size:0;"><img src="https://img.icons8.com/ios-filled/48/1a1a1a/facebook-new.png" alt="" width="14" height="14" style="width:14px;height:14px;border:0;display:block;"></td>
+                <td style="vertical-align:middle;padding:6px 11px 6px 5px;font-family:{{ font }};font-size:11px;color:#555555;font-weight:500;line-height:1.2;">{{ client.facebook_slug }}</td>
+              </tr></table>
+            </a>
+            {% else %}
+            <a href="{{ client.facebook_url }}" title="Facebook" target="_blank" rel="noopener" style="display:inline-block;width:28px;height:28px;line-height:28px;text-align:center;border:1px solid #e6e6e6;border-radius:14px;background-color:#ffffff;text-decoration:none;vertical-align:middle;"><img src="https://img.icons8.com/ios-filled/48/1a1a1a/facebook-new.png" alt="" width="14" height="14" style="width:14px;height:14px;border:0;display:inline-block;vertical-align:middle;"></a>
+            {% endif %}
+          </td>
+          {% endif %}
+
+          {% if client.tiktok_url %}
+          <td style="padding-right:8px;vertical-align:middle;">
+            {% if client.social_show_slug_labels and client.tiktok_slug %}
+            <a href="{{ client.tiktok_url }}" title="TikTok" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;border:1px solid #e6e6e6;border-radius:15px;background-color:#ffffff;vertical-align:middle;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;"><tr>
+                <td style="vertical-align:middle;padding:5px 3px 5px 9px;line-height:0;font-size:0;"><img src="https://img.icons8.com/ios-filled/48/1a1a1a/tiktok.png" alt="" width="14" height="14" style="width:14px;height:14px;border:0;display:block;"></td>
+                <td style="vertical-align:middle;padding:6px 11px 6px 5px;font-family:{{ font }};font-size:11px;color:#555555;font-weight:500;line-height:1.2;">{{ client.tiktok_slug }}</td>
+              </tr></table>
+            </a>
+            {% else %}
+            <a href="{{ client.tiktok_url }}" title="TikTok" target="_blank" rel="noopener" style="display:inline-block;width:28px;height:28px;line-height:28px;text-align:center;border:1px solid #e6e6e6;border-radius:14px;background-color:#ffffff;text-decoration:none;vertical-align:middle;"><img src="https://img.icons8.com/ios-filled/48/1a1a1a/tiktok.png" alt="" width="14" height="14" style="width:14px;height:14px;border:0;display:inline-block;vertical-align:middle;"></a>
+            {% endif %}
+          </td>
+          {% endif %}
+
+          {% if client.youtube_url %}
+          <td style="vertical-align:middle;">
+            {% if client.social_show_slug_labels and client.youtube_slug %}
+            <a href="{{ client.youtube_url }}" title="YouTube" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;border:1px solid #e6e6e6;border-radius:15px;background-color:#ffffff;vertical-align:middle;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;"><tr>
+                <td style="vertical-align:middle;padding:5px 3px 5px 9px;line-height:0;font-size:0;"><img src="https://img.icons8.com/ios-filled/48/1a1a1a/youtube-play.png" alt="" width="14" height="14" style="width:14px;height:14px;border:0;display:block;"></td>
+                <td style="vertical-align:middle;padding:6px 11px 6px 5px;font-family:{{ font }};font-size:11px;color:#555555;font-weight:500;line-height:1.2;">{{ client.youtube_slug }}</td>
+              </tr></table>
+            </a>
+            {% else %}
+            <a href="{{ client.youtube_url }}" title="YouTube" target="_blank" rel="noopener" style="display:inline-block;width:28px;height:28px;line-height:28px;text-align:center;border:1px solid #e6e6e6;border-radius:14px;background-color:#ffffff;text-decoration:none;vertical-align:middle;"><img src="https://img.icons8.com/ios-filled/48/1a1a1a/youtube-play.png" alt="" width="14" height="14" style="width:14px;height:14px;border:0;display:inline-block;vertical-align:middle;"></a>
+            {% endif %}
+          </td>
+          {% endif %}
+
+        </tr></table>
+        {% endif %}
+
+      </td>
+
+      {# ---------- Portrait rond (droite, optionnel) ---------- #}
+      {% if show_photo %}
+      <td valign="middle" style="vertical-align:middle;padding:2px 0 2px 24px;text-align:right;">
+        <img src="{{ client.photo1_url }}" alt="{{ display_name }}" width="80" height="80" style="display:block;width:80px;height:80px;border:0;outline:none;border-radius:50%;object-fit:cover;margin-left:auto;">
+      </td>
+      {% endif %}
+
+    </tr>
+  </table>
+</body>
+</html>

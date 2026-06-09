@@ -59,6 +59,14 @@ const signDexMainNavItems: ComputedRef<NavigationMenuItem[]> = computed(() => [
     },
   },
   {
+    label: 'Organisations',
+    icon: 'i-lucide-building-2',
+    to: '/organizations',
+    onSelect: () => {
+      open.value = false
+    },
+  },
+  {
     label: 'Signatures',
     icon: 'i-lucide-mail',
     to: '/templates',
