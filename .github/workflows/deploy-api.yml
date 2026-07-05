@@ -61,6 +61,20 @@ jobs:
           SUPABASE_API_KEY: ${{ secrets.SUPABASE_API_KEY }}
           SUPABASE_STORAGE_BUCKET: ${{ secrets.SUPABASE_STORAGE_BUCKET }}
           SIGNDEX_SEED_IF_EMPTY: ${{ secrets.SIGNDEX_SEED_IF_EMPTY }}
+          # Auth / portail client
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_EXPIRE_HOURS: ${{ secrets.JWT_EXPIRE_HOURS }}
+          INVITE_TTL_HOURS: ${{ secrets.INVITE_TTL_HOURS }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          PUBLIC_BASE_URL: ${{ secrets.PUBLIC_BASE_URL }}
+          # Resend (emails transactionnels — mot de passe oublié)
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_WEBHOOK_SECRET: ${{ secrets.RESEND_WEBHOOK_SECRET }}
+          RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
+          RESEND_FROM_NAME: ${{ secrets.RESEND_FROM_NAME }}
+          PORTAL_BASE_DOMAIN: ${{ secrets.PORTAL_BASE_DOMAIN }}
+          RESET_TTL_HOURS: ${{ secrets.RESET_TTL_HOURS }}
         run: |
           set -euo pipefail
           f=api/.env
@@ -71,6 +85,18 @@ jobs:
             echo "SUPABASE_API_KEY=${SUPABASE_API_KEY:-}"
             echo "SUPABASE_STORAGE_BUCKET=${SUPABASE_STORAGE_BUCKET:-SignDex}"
             echo "SIGNDEX_SEED_IF_EMPTY=${SIGNDEX_SEED_IF_EMPTY:-1}"
+            echo "JWT_SECRET=${JWT_SECRET}"
+            echo "JWT_EXPIRE_HOURS=${JWT_EXPIRE_HOURS:-168}"
+            echo "INVITE_TTL_HOURS=${INVITE_TTL_HOURS:-168}"
+            echo "ADMIN_EMAIL=${ADMIN_EMAIL}"
+            echo "ADMIN_PASSWORD=${ADMIN_PASSWORD}"
+            echo "PUBLIC_BASE_URL=${PUBLIC_BASE_URL:-https://signdex.dibodev.fr}"
+            echo "RESEND_API_KEY=${RESEND_API_KEY}"
+            echo "RESEND_WEBHOOK_SECRET=${RESEND_WEBHOOK_SECRET}"
+            echo "RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-noreply@mail.dibodev.fr}"
+            echo "RESEND_FROM_NAME=${RESEND_FROM_NAME:-SignDex}"
+            echo "PORTAL_BASE_DOMAIN=${PORTAL_BASE_DOMAIN:-dibodev.fr}"
+            echo "RESET_TTL_HOURS=${RESET_TTL_HOURS:-2}"
           } > "$f"
 
       - name: Pack api tree

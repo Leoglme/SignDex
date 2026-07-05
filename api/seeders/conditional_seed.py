@@ -22,6 +22,25 @@ def _load_dotenv() -> None:
     load_dotenv(_ROOT / ".env")
 
 
+def _ensure_lexial_org(db) -> None:
+    """Seed l'organisation LEXIAL UNE SEULE FOIS (si absente).
+
+    Ne réécrase jamais une organisation existante → les modifications faites par le
+    client depuis le portail (ajout de collaborateurs, déménagements…) sont préservées
+    à chaque déploiement.
+    """
+    from sqlalchemy import select
+
+    from models import Organization
+
+    if db.execute(select(Organization).where(Organization.name == "LEXIAL")).scalar_one_or_none():
+        return
+    from scripts.seed_lexial_org import main as seed_lexial
+
+    seed_lexial()
+    logger.info("Organisation LEXIAL seedée (première fois)")
+
+
 def run() -> None:
     _load_dotenv()
     from config import get_settings
@@ -35,6 +54,8 @@ def run() -> None:
     try:
         # Compte admin bootstrap : toujours tenté (idempotent), indépendant du seed de démo.
         ensure_admin_user(db)
+        # Organisation LEXIAL : créée une seule fois si absente (jamais réécrasée).
+        _ensure_lexial_org(db)
         if int(settings.signdex_seed_if_empty or 0) == 1:
             seed_if_database_empty(db)
         else:
