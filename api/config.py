@@ -30,6 +30,32 @@ class AppSettings(BaseSettings):
     signdex_export_device_scale: int = Field(default=2, ge=1, le=4)
     signdex_export_jpeg_quality: int = Field(default=95, ge=70, le=100)
 
+    # --- Auth / portail client ---
+    #: Secret de signature JWT. DOIT être défini en prod (variable d'env JWT_SECRET).
+    jwt_secret: str = "dev-insecure-change-me-in-prod"
+    #: Durée de validité du token de session (heures).
+    jwt_expire_hours: int = Field(default=168, ge=1)
+    #: Durée de validité d'un lien d'invitation (heures).
+    invite_ttl_hours: int = Field(default=168, ge=1)
+    #: Compte admin bootstrap créé au seed s'il n'existe pas (prod : ADMIN_EMAIL / ADMIN_PASSWORD).
+    admin_email: str | None = None
+    admin_password: str | None = None
+    #: Base publique pour construire les liens d'invitation (front). Prod : https://signdex.dibodev.fr
+    public_base_url: str = "http://localhost:3000"
+
+    # --- Resend (emails transactionnels : mot de passe oublié) ---
+    #: Clé API Resend. Vide = envoi désactivé (l'endpoint reste OK, sans email).
+    resend_api_key: str = ""
+    resend_webhook_secret: str = ""
+    #: Adresse d'envoi (doit être sur un domaine vérifié dans Resend, ex. mail.dibodev.fr).
+    resend_from_email: str = "noreply@mail.dibodev.fr"
+    #: Nom d'expéditeur par défaut (remplacé par le nom de l'organisation quand disponible).
+    resend_from_name: str = "SignDex"
+    #: Domaine racine des sous-domaines clients → liens email https://<slug>.<domaine>/reset/<token>.
+    portal_base_domain: str = "dibodev.fr"
+    #: Durée de validité d'un lien de réinitialisation de mot de passe (heures).
+    reset_ttl_hours: int = Field(default=2, ge=1)
+
 
 @lru_cache
 def get_settings() -> AppSettings:

@@ -11,10 +11,11 @@
       :square="collapsed"
       class="data-[state=open]:bg-elevated"
       :class="[!collapsed && 'py-2']"
-      :icon="collapsed ? 'i-lucide-circle-user' : undefined"
-      :label="collapsed ? undefined : 'Menu'"
+      icon="i-lucide-circle-user"
+      :label="collapsed ? undefined : displayName"
       :trailing-icon="collapsed ? undefined : 'i-lucide-chevrons-up-down'"
-      :aria-label="collapsed ? 'Menu compte et paramètres' : undefined"
+      :aria-label="collapsed ? 'Compte et paramètres' : undefined"
+      :ui="{ label: 'truncate' }"
     />
   </UDropdownMenu>
 </template>
@@ -28,8 +29,17 @@ defineProps<{
 }>()
 
 const colorMode = useColorMode()
+const { user, logout } = useAuth()
+
+const displayName: ComputedRef<string> = computed(() => user.value?.full_name || user.value?.email || 'Compte')
 
 const signDexUserMenuItems: ComputedRef<DropdownMenuItem[][]> = computed(() => [
+  [
+    {
+      label: user.value?.email || 'Compte',
+      type: 'label',
+    },
+  ],
   [
     {
       label: 'Apparence',
@@ -69,6 +79,16 @@ const signDexUserMenuItems: ComputedRef<DropdownMenuItem[][]> = computed(() => [
           },
         },
       ],
+    },
+  ],
+  [
+    {
+      label: 'Se déconnecter',
+      icon: 'i-lucide-log-out',
+      class: 'cursor-pointer',
+      onSelect: () => {
+        void logout()
+      },
     },
   ],
 ])

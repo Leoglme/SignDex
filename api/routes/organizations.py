@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import asyncio
 import io
+import uuid
 import zipfile
 from datetime import datetime
 from pathlib import Path
 
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, File, HTTPException, UploadFile
 from fastapi.responses import Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -32,6 +34,7 @@ from services.render_service import (
     render_org_assets,
     render_signature_html,
 )
+from services.supabase_storage_service import is_configured, upload_template_asset_bytes_sync
 from services.template_service import list_templates, load_template_html
 
 router = APIRouter()
@@ -79,6 +82,9 @@ def list_organizations(db: Session = Depends(get_db)) -> list[OrganizationSummar
             slug=o.slug,
             notes=o.notes,
             show_chambers=o.show_chambers,
+            brand_logo_url=o.brand_logo_url,
+            brand_color=o.brand_color,
+            default_theme=o.default_theme,
             office_count=len(o.offices),
             member_count=len(o.members),
             signature_count=_signature_count(o),
@@ -100,6 +106,8 @@ def create_organization(payload: OrganizationCreate, db: Session = Depends(get_d
         slug=_safe_slug(payload.name),
         notes=payload.notes,
         show_chambers=payload.show_chambers,
+        brand_logo_url=payload.brand_logo_url,
+        brand_color=payload.brand_color,
     )
     for off in payload.offices:
         org.offices.append(
@@ -127,10 +135,44 @@ def update_organization(org_id: int, payload: OrganizationUpdate, db: Session = 
         org.notes = data["notes"]
     if "show_chambers" in data and data["show_chambers"] is not None:
         org.show_chambers = data["show_chambers"]
+    for field in ("brand_logo_url", "brand_color", "sig_logo_url", "sig_chambers_url", "default_theme"):
+        if field in data:
+            setattr(org, field, data[field])
     db.add(org)
     db.commit()
     db.refresh(org)
     return org
+
+
+@router.post("/{org_id}/brand-logo")
+async def upload_brand_logo(
+    org_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+) -> dict[str, str]:
+    """Téléverse le logo de marque vers Supabase et le persiste sur l'organisation."""
+    org = _get_org_or_404(db, org_id)
+    if not is_configured():
+        raise HTTPException(
+            status_code=400,
+            detail="Supabase n'est pas configuré (SUPABASE_URL / SUPABASE_API_KEY / SUPABASE_STORAGE_BUCKET)",
+        )
+    data = await file.read()
+    if not data:
+        raise HTTPException(status_code=400, detail="Fichier vide")
+    ext = Path(file.filename or "logo.png").suffix or ".png"
+    object_path = f"organizations/{org_id}/brand-{uuid.uuid4().hex}{ext}"
+    url = await asyncio.to_thread(
+        upload_template_asset_bytes_sync,
+        object_path=object_path,
+        data=data,
+        content_type=file.content_type or "image/png",
+    )
+    org.brand_logo_url = url
+    db.add(org)
+    db.commit()
+    db.refresh(org)
+    return {"brand_logo_url": url}
 
 
 @router.delete("/{org_id}")
@@ -267,7 +309,17 @@ def _build_deliverable_zip(org: Organization, members: list[OrganizationMember],
             rendered = render_signature_html(
                 template_html=raw,
                 client=client,
-                extra={"chambers_visible": org.show_chambers},
+                extra={
+                    "chambers_visible": org.show_chambers,
+                    "sig_logo_url": org.sig_logo_url,
+                    "sig_chambers_url": org.sig_chambers_url,
+                    "office": {
+                        "street": office.address_street,
+                        "cp_city": office.address_cp_city,
+                        "phone_display": office.phone_display,
+                        "phone_tel": office.phone_tel,
+                    },
+                },
             )
             plan.append((member_slug, _safe_slug(office.label), rendered))
             jobs.append(OrgSigJob(rendered_html=rendered, sender_name=_member_full_name(member)))

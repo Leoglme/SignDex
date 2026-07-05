@@ -9,94 +9,85 @@
 {#
   Signature e-mail LEXIAL — bureau de GENÈVE.
 
-  Calquée sur la signature de base du client (Avenir 10px, mention de confidentialité
-  justifiée 9px). Une signature par bureau : SEUL le « Bloc BUREAU » ci-dessous change.
-  Par collaborateur, seuls le NOM et le TITRE changent (fiche client OU membre d'organisation).
+  Calquée sur la « signature idéale » d'Emmanuel Ruchat (retours du 04-05/07). Une signature
+  par bureau : SEUL le « Bloc BUREAU » ci-dessous change. Par collaborateur, seuls le NOM
+  et le TITRE changent (fiche client OU membre d'organisation).
 
   Tables + styles inline → compatible Gmail / Apple Mail / Outlook (Windows inclus).
 
-  ── CORRECTIONS (retours client, Outlook) ────────────────────────────────────
-  • Logo LEXIAL : image TRANSPARENTE (pas de boîte blanche), cliquable -> lexial.eu.
-    IMPORTANT : PAS de `line-height:0` sur la cellule du logo → sinon Outlook rogne
-    le HAUT du logo une fois cliquable. `display:block` + dimensions figées.
-  • Téléphone : ramené à GAUCHE, séparé par une barre verticale « │ » (plus de point
-    rouge ni d'alignement à droite).
-  • Logo Chambers : SOUS le logo, pleine largeur, responsive, NON cliquable.
-    Masquer / afficher via le switch « Logo Chambers » de l'organisation (show_chambers).
-  • Mention de confidentialité : `show_notice = false` pour la retirer.
+  ── SPÉCIFICATION (retours client, Outlook) ──────────────────────────────────
+  • Police Aptos (police par défaut de Microsoft/Outlook).
+  • Nom : bleu #001958, font-weight 500. Fonction : italique gris. Coordonnées : gris, 11px, 500.
+  • Agencement : Nom → Fonction → logo LEXIAL (espacé) → adresse → Chambers → notice.
+  • Adresse : « rue | INDICATIF-CP Ville | téléphone » (BE-/F-/CH-, pas de ville en début).
+  • Logo LEXIAL transparent, cliquable -> lexial.eu, PAS de line-height:0 (sinon Outlook rogne).
+  • Chambers ~270px (≈ largeur de l'adresse), NON cliquable. Switch org: show_chambers.
+  • Notice de confidentialité : ANGLAIS uniquement. show_notice = false pour la retirer.
 #}
 
 {# ===== Bloc BUREAU — la SEULE partie qui diffère entre Paris / Genève / Bruxelles ===== #}
-{% set office_city = 'Geneva' %}
-{% set office_address = 'Chemin de la Milice, CH-1228 Plan-les-Ouates Genève' %}
-{% set office_maps = 'https://www.google.com/maps/search/?api=1&query=Chemin%20de%20la%20Milice%2C%20CH-1228%20Plan-les-Ouates%20Gen%C3%A8ve' %}
-{% set office_phone_display = '+41 22 595 59 26' %}
-{% set office_phone_tel = '+41225955926' %}
+{% set office_street = office.street if office is defined and office.street else 'Chemin de la Milice' %}
+{% set office_cp_city = office.cp_city if office is defined and office.cp_city else 'CH-1228 Plan-les-Ouates, Geneva' %}
+{% set office_phone_display = office.phone_display if office is defined and office.phone_display else '+41 22 595 59 26' %}
+{% set office_phone_tel = office.phone_tel if office is defined and office.phone_tel else '+41225955926' %}
 
 {# ===== Réglages de marque (identiques aux 3 bureaux) ===== #}
 {% set show_chambers = chambers_visible if chambers_visible is defined else true %}
 {% set show_notice = true %}
 {% set lexial_site = 'https://lexial.eu/' %}
-{% set logo_url = 'https://aapjpybdkzqtgxavjjem.supabase.co/storage/v1/object/public/GoupixDex/template-assets/lexial/lexial-logo-transparent.png' %}
-{% set logo_w = 120 %}
-{% set logo_h = 20 %}
-{% set chambers_url = 'https://aapjpybdkzqtgxavjjem.supabase.co/storage/v1/object/public/GoupixDex/template-assets/lexial/chambers-2026.png' %}
-{% set sig_max_w = 640 %}
+{% set logo_url = sig_logo_url if sig_logo_url is defined and sig_logo_url else 'https://aapjpybdkzqtgxavjjem.supabase.co/storage/v1/object/public/GoupixDex/template-assets/lexial/lexial-logo-transparent.png' %}
+{% set logo_w = 88 %}
+{% set logo_h = 15 %}
+{% set chambers_url = sig_chambers_url if sig_chambers_url is defined and sig_chambers_url else 'https://aapjpybdkzqtgxavjjem.supabase.co/storage/v1/object/public/GoupixDex/template-assets/lexial/chambers-2026.png' %}
+{% set chambers_w = 270 %}
 
-{% set font = "Avenir, 'Avenir Next', Helvetica, Arial, sans-serif" %}
+{% set font = "Aptos, 'Segoe UI', Calibri, Helvetica, Arial, sans-serif" %}
+{% set ink = '#222222' %}
+{% set name_color = '#001958' %}
+{% set gray = '#666666' %}
+{% set sep = '#B5B5B5' %}
 {% set display_name = client.full_name or client.name %}
 {% set role = client.role_line %}
 
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; font-family:{{ font }}; font-size:10px; line-height:13px; color:#333333; width:100%; max-width:{{ sig_max_w }}px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; font-family:{{ font }}; font-size:11px; line-height:15px; color:{{ ink }}; width:100%; max-width:640px;">
 
-  {# ---------- Nom du collaborateur ---------- #}
+  {# ---------- Nom (bleu, semi-gras léger) ---------- #}
   <tr>
-    <td style="padding:0 0 5px 0; font-size:10px; line-height:13px; font-weight:bold; color:#333333;">{{ display_name }}</td>
+    <td style="padding:0 0 1px 0; font-family:{{ font }}; font-size:14px; line-height:18px; font-weight:500; color:{{ name_color }};">{{ display_name }}</td>
   </tr>
 
-  {# ---------- Titre / fonction ---------- #}
+  {# ---------- Fonction (italique) ---------- #}
   {% if role %}
   <tr>
-    <td style="padding:0 0 9px 0; font-size:10px; line-height:13px; color:#666666;">{{ role }}</td>
+    <td style="padding:0 0 7px 0; font-family:{{ font }}; font-size:12px; line-height:15px; font-style:italic; color:{{ gray }};">{{ role }}</td>
   </tr>
   {% endif %}
 
-  {# ---------- Bureau : Ville │ adresse │ téléphone (tout à gauche) ---------- #}
+  {# ---------- Logo LEXIAL (transparent, cliquable, espacé) ---------- #}
   <tr>
-    <td style="padding:0 0 9px 0;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; font-family:{{ font }}; font-size:10px; line-height:13px; color:#666666;">
-        <tr>
-          <td style="padding:0 8px 0 0; font-weight:bold; color:#666666; white-space:nowrap; vertical-align:top;">{{ office_city }}</td>
-          <td style="padding:0 8px 0 0; color:#B5B5B5; vertical-align:top;">│</td>
-          <td style="padding:0 8px 0 0; vertical-align:top;"><a href="{{ office_maps }}" target="_blank" rel="noopener" style="color:#666666; text-decoration:none; font-family:{{ font }};">{{ office_address }}</a></td>
-          <td style="padding:0 8px 0 0; color:#B5B5B5; vertical-align:top;">│</td>
-          <td style="padding:0; white-space:nowrap; vertical-align:top;"><a href="tel:{{ office_phone_tel }}" style="color:#666666; text-decoration:none; font-family:{{ font }};">{{ office_phone_display }}</a></td>
-        </tr>
-      </table>
-    </td>
-  </tr>
-
-  {# ---------- Logo LEXIAL (transparent, cliquable, PAS de line-height:0 → pas de rognage) ---------- #}
-  <tr>
-    <td style="padding:1px 0 8px 0;">
+    <td style="padding:7px 0 12px 0;">
       <a href="{{ lexial_site }}" target="_blank" rel="noopener" style="text-decoration:none; border:0; outline:none;"><img src="{{ logo_url }}" alt="LEXIAL" width="{{ logo_w }}" height="{{ logo_h }}" style="display:block; width:{{ logo_w }}px; height:{{ logo_h }}px; border:0; outline:none; text-decoration:none;"></a>
     </td>
   </tr>
 
-  {# ---------- Logo Chambers (pleine largeur, responsive, NON cliquable) ---------- #}
+  {# ---------- Coordonnées : rue | INDICATIF-CP Ville | téléphone ---------- #}
+  <tr>
+    <td style="padding:0 0 9px 0; font-family:{{ font }}; font-size:11px; line-height:15px; font-weight:500; color:{{ gray }};">{{ office_street }} <span style="color:{{ sep }};">|</span> {{ office_cp_city }} <span style="color:{{ sep }};">|</span> <a href="tel:{{ office_phone_tel }}" style="color:{{ gray }}; text-decoration:none; font-family:{{ font }};">{{ office_phone_display }}</a></td>
+  </tr>
+
+  {# ---------- Logo Chambers (≈ largeur de l'adresse, responsive, NON cliquable) ---------- #}
   {% if show_chambers %}
   <tr>
-    <td style="padding:0 0 8px 0;"><img src="{{ chambers_url }}" alt="Chambers and Partners — Global Practice Guide Contributor — Corporate Immigration 2026" width="{{ sig_max_w }}" style="display:block; width:100%; max-width:{{ sig_max_w }}px; height:auto; border:0; outline:none;"></td>
+    <td style="padding:0 0 9px 0;"><img src="{{ chambers_url }}" alt="Chambers and Partners — Global Practice Guide Contributor — Corporate Immigration 2026" width="{{ chambers_w }}" style="display:block; width:100%; max-width:{{ chambers_w }}px; height:auto; border:0; outline:none;"></td>
   </tr>
   {% endif %}
 
-  {# ---------- Mention de confidentialité (EN + FR), justifiée ---------- #}
+  {# ---------- Mention de confidentialité (ANGLAIS uniquement), justifiée ---------- #}
   {% if show_notice %}
   <tr>
-    <td style="padding:8px 0 0 0; border-top:1px solid #d9d9d9; font-size:9px; line-height:13px; color:#555555; font-family:{{ font }};">
+    <td style="padding:8px 0 0 0; border-top:1px solid #d9d9d9; font-family:{{ font }}; font-size:9px; line-height:13px; color:{{ gray }};">
       <div style="font-size:10px; line-height:13px; color:#888888; text-transform:uppercase; padding:0 0 4px 0;">Confidentiality Notice</div>
-      <div style="padding:0 0 6px 0; text-align:justify; text-justify:inter-word;">The documents accompanying this e-mail contain confidential information belonging to the sender which is legally privileged. The information is intended only for the use of the individual or entity named above. If you are not the intended recipient, any disclosure, copying, distribution or action taken in reliance on this e-mail is strictly prohibited. If you have received this e-mail in error, please notify us immediately by telephone or e-mail.</div>
-      <div style="text-align:justify; text-justify:inter-word;">Les documents transmis par ce message électronique contiennent des informations à caractère purement confidentiel appartenant à l'émetteur qui est légalement protégé. Ces informations sont uniquement destinées à la personne physique ou morale dénommée ci-dessus. Si vous n'étiez pas le destinataire désigné, toute divulgation, copie ou utilisation de ce courriel est strictement prohibée. Si vous avez reçu ce message par erreur, merci de nous en avertir immédiatement par téléphone ou par courriel.</div>
+      <div style="text-align:justify; text-justify:inter-word;">The documents accompanying this e-mail contain confidential information belonging to the sender which is legally privileged. The information is intended only for the use of the individual or entity named above. If you are not the intended recipient, any disclosure, copying, distribution or action taken in reliance on this e-mail is strictly prohibited. If you have received this e-mail in error, please notify us immediately by telephone or e-mail.</div>
     </td>
   </tr>
   {% endif %}

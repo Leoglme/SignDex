@@ -16,16 +16,18 @@ from sqlalchemy import select
 from core.database import SessionLocal
 from models import Client, Organization, OrganizationMember, OrganizationOffice
 
-# (libellé bureau, template)
+# (libellé bureau, template, rue, CP+ville, téléphone affiché, téléphone lien)
 OFFICES = [
-    ("Paris", "signature-lexial-paris"),
-    ("Geneva", "signature-lexial-geneva"),
-    ("Brussels", "signature-lexial-brussels"),
+    ("Paris", "signature-lexial-paris", "30 rue Jouffroy d’Abbans", "F-75017 Paris", "+33 1 84 60 60 16", "+33184606016"),
+    ("Geneva", "signature-lexial-geneva", "Chemin de la Milice", "CH-1228 Plan-les-Ouates, Geneva", "+41 22 595 59 26", "+41225955926"),
+    ("Brussels", "signature-lexial-brussels", "Rue de la Loi 155/99", "BE-1040 Brussels", "+32 2 511 23 33", "+3225112333"),
 ]
+
+LEXIAL_LOGO_URL = "https://aapjpybdkzqtgxavjjem.supabase.co/storage/v1/object/public/GoupixDex/template-assets/lexial/lexial-logo-transparent.png"
 
 # (prénom, nom, titre, [bureaux])
 MEMBERS = [
-    ("Emmanuel", "Ruchat", "Associé – Partner", ["Paris", "Geneva", "Brussels"]),
+    ("Emmanuel", "Ruchat", "Avocat associé – Partner", ["Paris", "Geneva", "Brussels"]),
     ("Pierre", "Langlois de Bazillac", "Avocat associé – Partner", ["Paris", "Brussels"]),
     ("Sander", "Van Hulle", "Of Counsel", ["Brussels"]),
     ("François", "Ziegler", "Of Counsel", ["Paris", "Geneva", "Brussels"]),
@@ -61,10 +63,21 @@ def main() -> None:
             slug="lexial",
             notes="Cabinet d'avocats — lexial.eu",
             show_chambers=False,
+            brand_color="#d1080c",
+            brand_logo_url=LEXIAL_LOGO_URL,
+            default_theme="light",
         )
         offices_by_label: dict[str, OrganizationOffice] = {}
-        for i, (label, template_key) in enumerate(OFFICES):
-            office = OrganizationOffice(label=label, template_key=template_key, sort_order=i)
+        for i, (label, template_key, street, cp_city, phone_display, phone_tel) in enumerate(OFFICES):
+            office = OrganizationOffice(
+                label=label,
+                template_key=template_key,
+                sort_order=i,
+                address_street=street,
+                address_cp_city=cp_city,
+                phone_display=phone_display,
+                phone_tel=phone_tel,
+            )
             org.offices.append(office)
             offices_by_label[label] = office
 

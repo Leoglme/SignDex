@@ -28,9 +28,13 @@ def run() -> None:
     from core.database import SessionLocal
     from seeders.initial_clients_seeder import seed_if_database_empty
 
+    from seeders.auth_seeder import ensure_admin_user
+
     settings = get_settings()
     db = SessionLocal()
     try:
+        # Compte admin bootstrap : toujours tenté (idempotent), indépendant du seed de démo.
+        ensure_admin_user(db)
         if int(settings.signdex_seed_if_empty or 0) == 1:
             seed_if_database_empty(db)
         else:

@@ -142,7 +142,7 @@ async function attachAndRegenerate() {
       service === 'signatures' ? `${base}/clients/${it.clientId}/deliverable` : `${base}/services/${service}/clients/${it.clientId}/deliverable`
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify({ variants }),
     })
     if (!res.ok) throw new Error(await res.text())
@@ -196,7 +196,7 @@ async function regenerateOrganization(it: DeliverableIndexItem) {
     const base = useApiBase()
     const res = await fetch(`${base}/organizations/${it.clientId}/deliverable`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: '{}',
     })
     if (!res.ok) throw new Error(await res.text())
@@ -237,7 +237,7 @@ async function regenerate(it: DeliverableIndexItem) {
       service === 'signatures' ? `${base}/clients/${it.clientId}/deliverable` : `${base}/services/${service}/clients/${it.clientId}/deliverable`
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify({ variants: it.variants }),
     })
     if (!res.ok) throw new Error(await res.text())

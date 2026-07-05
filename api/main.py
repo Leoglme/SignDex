@@ -11,15 +11,19 @@ try:
 except ImportError:
     pass
 
-from fastapi import FastAPI, Request, status
+from fastapi import Depends, FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from config import get_settings
+from core.security import get_current_user, require_admin
+from routes import access as access_routes
+from routes import auth as auth_routes
 from routes import clients as clients_routes
 from routes import generate as generate_routes
 from routes import organizations as organizations_routes
+from routes import portal as portal_routes
 from routes import render as render_routes
 from routes import services as services_routes
 from routes import templates as templates_routes
@@ -87,10 +91,24 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-app.include_router(clients_routes.router, prefix="/clients", tags=["clients"])
-app.include_router(organizations_routes.router, prefix="/organizations", tags=["organizations"])
-app.include_router(templates_routes.router, prefix="/templates", tags=["templates"])
-app.include_router(render_routes.router, tags=["render"])
-app.include_router(generate_routes.router, tags=["deliverables"])
-app.include_router(services_routes.router, tags=["services"])
+# Auth : ouvert. Accès (invitations) : auth par endpoint (admin OU propriétaire de l'espace).
+# Tout le reste (outils d'administration SignDex) : réservé à l'admin.
+app.include_router(auth_routes.router, prefix="/auth", tags=["auth"])
+app.include_router(access_routes.router, prefix="/organizations", tags=["access"])
+app.include_router(portal_routes.router, prefix="/portal", tags=["portal"])
+app.include_router(
+    clients_routes.router, prefix="/clients", tags=["clients"], dependencies=[Depends(require_admin)],
+)
+app.include_router(
+    organizations_routes.router,
+    prefix="/organizations",
+    tags=["organizations"],
+    dependencies=[Depends(require_admin)],
+)
+app.include_router(
+    templates_routes.router, prefix="/templates", tags=["templates"], dependencies=[Depends(require_admin)],
+)
+app.include_router(render_routes.router, tags=["render"], dependencies=[Depends(require_admin)])
+app.include_router(generate_routes.router, tags=["deliverables"], dependencies=[Depends(require_admin)])
+app.include_router(services_routes.router, tags=["services"], dependencies=[Depends(require_admin)])
 
