@@ -74,7 +74,7 @@ def create_user(
     db.add(user)
     db.commit()
     db.refresh(user)
-    return InviteLinkOut(user=AccessUserOut.model_validate(user), invite_url=build_invite_url(user.invite_token))
+    return InviteLinkOut(user=AccessUserOut.model_validate(user), invite_url=build_invite_url(org, user.invite_token))
 
 
 @router.post("/{org_id}/users/{user_id}/reinvite", response_model=InviteLinkOut)
@@ -96,7 +96,7 @@ def reinvite_user(
     db.add(user)
     db.commit()
     db.refresh(user)
-    return InviteLinkOut(user=AccessUserOut.model_validate(user), invite_url=build_invite_url(user.invite_token))
+    return InviteLinkOut(user=AccessUserOut.model_validate(user), invite_url=build_invite_url(user.organization, user.invite_token))
 
 
 @router.delete("/{org_id}/users/{user_id}")

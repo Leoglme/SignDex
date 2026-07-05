@@ -71,9 +71,21 @@ def invite_is_valid(user: User) -> bool:
     return bool(user.invite_token) and user.invite_expires_at is not None and user.invite_expires_at > datetime.utcnow()
 
 
-def build_invite_url(token: str) -> str:
-    base = get_settings().public_base_url.rstrip("/")
-    return f"{base}/invitation/{token}"
+def _portal_url(org: Organization | None, path: str, token: str) -> str:
+    """URL du portail sur le sous-domaine du client (ex. https://lexial.dibodev.fr/<path>/<token>).
+
+    Fallback sur `public_base_url` si l'orga n'a pas de slug ou si le domaine racine n'est pas configuré.
+    """
+    settings = get_settings()
+    base_domain = settings.portal_base_domain.strip()
+    if org and org.slug and base_domain:
+        return f"https://{org.slug}.{base_domain}/{path}/{token}"
+    return f"{settings.public_base_url.rstrip('/')}/{path}/{token}"
+
+
+def build_invite_url(org: Organization | None, token: str) -> str:
+    """Lien d'invitation sur le sous-domaine du client (ex. https://lexial.dibodev.fr/invitation/<token>)."""
+    return _portal_url(org, "invitation", token)
 
 
 # --------------------------------------------------------------------------- #
@@ -92,15 +104,8 @@ def reset_is_valid(user: User) -> bool:
 
 
 def build_reset_url(org: Organization | None, token: str) -> str:
-    """Lien de réinitialisation sur le sous-domaine du client (ex. https://lexial.dibodev.fr/reset/<token>).
-
-    Fallback sur `public_base_url` si l'orga n'a pas de slug ou si le domaine racine n'est pas configuré.
-    """
-    settings = get_settings()
-    base_domain = settings.portal_base_domain.strip()
-    if org and org.slug and base_domain:
-        return f"https://{org.slug}.{base_domain}/reset/{token}"
-    return f"{settings.public_base_url.rstrip('/')}/reset/{token}"
+    """Lien de réinitialisation sur le sous-domaine du client (ex. https://lexial.dibodev.fr/reset/<token>)."""
+    return _portal_url(org, "reset", token)
 
 
 # --------------------------------------------------------------------------- #
