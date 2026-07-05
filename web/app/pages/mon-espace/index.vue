@@ -38,7 +38,7 @@
         <!-- Liste -->
         <div class="mt-6">
           <div v-if="loading" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            <USkeleton v-for="i in 6" :key="i" class="h-28 w-full rounded-2xl" />
+            <USkeleton v-for="i in 6" :key="i" class="h-28 w-full rounded-2xl bg-neutral-200 dark:bg-neutral-800" />
           </div>
           <div v-else-if="filteredMembers.length" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <div
@@ -143,7 +143,7 @@
   <UModal v-model:open="previewOpen" :title="`Aperçu — ${previewName}`" :ui="{ content: 'sm:max-w-3xl' }">
     <template #body>
       <div v-if="previewLoading" class="space-y-3">
-        <USkeleton class="h-72 w-full rounded-lg" />
+        <USkeleton class="h-72 w-full rounded-lg bg-neutral-200 dark:bg-neutral-800" />
       </div>
       <div v-else-if="previewSigs.length" class="space-y-5">
         <div v-for="sig in previewSigs" :key="sig.office_label">
@@ -197,9 +197,16 @@ useHead({ title: 'Mes signatures' })
 const toast = useToast()
 const { brandButtonStyle } = useBrand()
 
-const overview = ref<PortalOverview | null>(null)
-const loading = ref(true)
-const error = ref<string | null>(null)
+// SSR : les données sont récupérées côté serveur → au reload, la page arrive déjà remplie
+// (pas de skeleton). En navigation client / refresh manuel, `refresh()` recharge (skeleton).
+const { data: overview, status, error: overviewError, refresh } = await useAsyncData<PortalOverview>(
+  'portal-overview',
+  () => apiFetch<PortalOverview>('/portal/overview'),
+)
+const loading: ComputedRef<boolean> = computed(() => status.value === 'pending')
+const error: ComputedRef<string | null> = computed(() =>
+  overviewError.value ? (overviewError.value.message || 'Chargement impossible') : null,
+)
 const downloadingAll = ref(false)
 const downloadingMember = ref<number | null>(null)
 
@@ -329,15 +336,7 @@ async function openPreview(m: PortalMember): Promise<void> {
 }
 
 async function load(): Promise<void> {
-  loading.value = true
-  error.value = null
-  try {
-    overview.value = await apiFetch<PortalOverview>('/portal/overview')
-  } catch (e) {
-    error.value = (e as Error).message
-  } finally {
-    loading.value = false
-  }
+  await refresh()
 }
 
 async function save(): Promise<void> {
@@ -431,6 +430,4 @@ async function downloadMember(m: PortalMember): Promise<void> {
     downloadingMember.value = null
   }
 }
-
-onMounted(load)
 </script>

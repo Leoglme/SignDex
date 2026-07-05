@@ -136,7 +136,8 @@ async function onSubmit(_event: FormSubmitEvent<typeof state>): Promise<void> {
  */
 function applyHostTheme(): void {
   const preferred = branding.value?.default_theme
-  if (preferred === 'light' || preferred === 'dark') {
+  // Seulement si l'utilisateur n'a jamais choisi (préférence 'system') → on respecte son choix persistant.
+  if ((preferred === 'light' || preferred === 'dark') && colorMode.preference === 'system') {
     colorMode.preference = preferred
   }
 }

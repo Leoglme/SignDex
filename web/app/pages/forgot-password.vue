@@ -55,15 +55,13 @@
         label="Envoyer le lien"
       />
     </UForm>
-
-    <template #footer>
-      <div class="text-center">
-        <NuxtLink to="/login" class="text-muted hover:text-default text-sm transition-colors">
-          ← Retour à la connexion
-        </NuxtLink>
-      </div>
-    </template>
   </UCard>
+
+  <div class="mt-5 text-center">
+    <NuxtLink to="/login" class="text-muted hover:text-default text-sm transition-colors">
+      ← Retour à la connexion
+    </NuxtLink>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -116,7 +114,8 @@ async function onSubmit(_event: FormSubmitEvent<typeof state>): Promise<void> {
 /** Applique le thème par défaut de l'organisation (cohérence avec le portail). */
 function applyHostTheme(): void {
   const preferred = branding.value?.default_theme
-  if (preferred === 'light' || preferred === 'dark') {
+  // Seulement si l'utilisateur n'a jamais choisi (préférence 'system') → on respecte son choix persistant.
+  if ((preferred === 'light' || preferred === 'dark') && colorMode.preference === 'system') {
     colorMode.preference = preferred
   }
 }

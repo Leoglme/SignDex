@@ -48,7 +48,7 @@
           <p class="text-muted mb-4 text-sm">Dépliez un bureau pour modifier son adresse (déménagement). Les signatures rattachées seront à jour au prochain téléchargement.</p>
 
           <div v-if="loading" class="space-y-2">
-            <USkeleton v-for="i in 3" :key="i" class="h-16 w-full rounded-2xl" />
+            <USkeleton v-for="i in 3" :key="i" class="h-16 w-full rounded-2xl bg-neutral-200 dark:bg-neutral-800" />
           </div>
           <div v-else class="space-y-2.5">
             <UCollapsible
@@ -148,9 +148,15 @@ interface OfficeDraft {
   phone_display: string
 }
 
-const overview = ref<PortalOverview | null>(null)
-const loading = ref(true)
-const error = ref<string | null>(null)
+// SSR : données récupérées côté serveur → page déjà remplie au reload (pas de skeleton).
+const { data: overview, status, error: overviewError, refresh } = await useAsyncData<PortalOverview>(
+  'portal-overview',
+  () => apiFetch<PortalOverview>('/portal/overview'),
+)
+const loading: ComputedRef<boolean> = computed(() => status.value === 'pending')
+const error: ComputedRef<string | null> = computed(() =>
+  overviewError.value ? (overviewError.value.message || 'Chargement impossible') : null,
+)
 const drafts = ref<OfficeDraft[]>([])
 const savingOfficeId = ref<number | null>(null)
 const openOfficeId = ref<number | null>(null)
@@ -186,27 +192,24 @@ function pinColor(label: string): string {
   return palette[s % palette.length]!
 }
 
+/** Remplit les brouillons éditables + images à partir des données chargées (SSR au montage + refresh). */
+function populateFromOverview(data: PortalOverview | null): void {
+  if (!data) return
+  drafts.value = data.offices.map(o => ({
+    id: o.id,
+    label: o.label,
+    address_street: o.address_street || '',
+    address_cp_city: o.address_cp_city || '',
+    phone_display: o.phone_display || '',
+  }))
+  openOfficeId.value = drafts.value[0]?.id ?? null
+  sigLogoUrl.value = data.organization.sig_logo_url
+  sigChambersUrl.value = data.organization.sig_chambers_url
+}
+watch(overview, populateFromOverview, { immediate: true })
+
 async function load(): Promise<void> {
-  loading.value = true
-  error.value = null
-  try {
-    const data = await apiFetch<PortalOverview>('/portal/overview')
-    overview.value = data
-    drafts.value = data.offices.map(o => ({
-      id: o.id,
-      label: o.label,
-      address_street: o.address_street || '',
-      address_cp_city: o.address_cp_city || '',
-      phone_display: o.phone_display || '',
-    }))
-    openOfficeId.value = drafts.value[0]?.id ?? null
-    sigLogoUrl.value = data.organization.sig_logo_url
-    sigChambersUrl.value = data.organization.sig_chambers_url
-  } catch (e) {
-    error.value = (e as Error).message
-  } finally {
-    loading.value = false
-  }
+  await refresh()
 }
 
 async function saveOffice(d: OfficeDraft): Promise<void> {
@@ -284,5 +287,4 @@ async function resetImage(field: 'logo' | 'chambers'): Promise<void> {
   }
 }
 
-onMounted(load)
 </script>

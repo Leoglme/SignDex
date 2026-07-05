@@ -86,12 +86,12 @@ const navItems: ComputedRef<NavigationMenuItem[]> = computed(() => [
   },
 ])
 
-// Thème par défaut choisi par l'admin pour cet espace : on l'applique au chargement
-// (le client peut ensuite basculer dans la session via le menu). colorMode étant partagé
-// par origine, on force ici pour garantir le thème voulu pour l'espace.
+// Thème par défaut choisi par l'admin : appliqué UNIQUEMENT au premier passage (préférence
+// 'system' = l'utilisateur n'a jamais choisi). Dès qu'il bascule clair/sombre lui-même, son
+// choix est respecté et persiste au reload — on ne le réécrase plus.
 function applyOrgTheme(): void {
   const preferred = user.value?.default_theme
-  if (preferred === 'light' || preferred === 'dark') {
+  if ((preferred === 'light' || preferred === 'dark') && colorMode.preference === 'system') {
     colorMode.preference = preferred
   }
 }
