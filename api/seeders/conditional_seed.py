@@ -33,12 +33,20 @@ def _ensure_lexial_org(db) -> None:
 
     from models import Organization
 
-    if db.execute(select(Organization).where(Organization.name == "LEXIAL")).scalar_one_or_none():
+    # Garde robuste : si une orga LEXIAL existe déjà (par slug OU par nom), on ne touche à RIEN.
+    # `slug='lexial'` est la clé multi-tenant (sous-domaine) → immuable en pratique. `.first()`
+    # (et non `scalar_one_or_none`) pour ne jamais lever si plusieurs lignes correspondent.
+    already_exists = db.execute(
+        select(Organization.id).where(
+            (Organization.slug == "lexial") | (Organization.name == "LEXIAL"),
+        ),
+    ).first()
+    if already_exists:
         return
     from scripts.seed_lexial_org import main as seed_lexial
 
     seed_lexial()
-    logger.info("Organisation LEXIAL seedée (première fois)")
+    logger.info("Organisation LEXIAL seedée (première fois, base vide)")
 
 
 def run() -> None:
