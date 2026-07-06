@@ -37,10 +37,10 @@
 
         <!-- Liste -->
         <div class="mt-6">
-          <div v-if="loading" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div v-if="loading" class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <USkeleton v-for="i in 6" :key="i" class="h-28 w-full rounded-2xl bg-neutral-200 dark:bg-neutral-800" />
           </div>
-          <div v-else-if="filteredMembers.length" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div v-else-if="filteredMembers.length" class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <div
               v-for="m in filteredMembers"
               :key="m.id"
@@ -63,7 +63,7 @@
               </div>
               <div class="text-muted mt-3 flex items-center gap-1.5 text-sm">
                 <UIcon name="i-lucide-map-pin" class="size-3.5 shrink-0 opacity-70" />
-                <span class="truncate">{{ m.offices.map(o => o.label).join(' · ') || 'Aucun bureau' }}</span>
+                <span class="min-w-0 truncate">{{ m.offices.map(o => o.label).join(' · ') || 'Aucun bureau' }}</span>
               </div>
             </div>
           </div>

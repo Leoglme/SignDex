@@ -119,7 +119,7 @@ const clients: ClientHelp[] = [
     hint: 'Gmail nécessite une étape par le site « Probador » pour garder les liens cliquables.',
     steps: [
       'Ouvrez le fichier <b>HTML</b> avec un éditeur de texte (le <b>Bloc-notes</b>), puis <b>Ctrl + A</b> puis <b>Ctrl + C</b> — vous copiez le code.',
-      'Ouvrez le site Probador : <a href="https://solamentecodigoshtmlbybcn.jimdofree.com/probador-de-html/" target="_blank" rel="noopener">solamentecodigoshtmlbybcn.jimdofree.com/probador-de-html</a>. Collez le code dans la zone de texte et lancez la conversion : un nouvel onglet affiche l\'aperçu de la signature.',
+      'Ouvrez le site Probador : <a href="https://solamentecodigoshtmlbybcn.jimdofree.com/probador-de-html/" target="_blank" rel="noopener" style="word-break:break-all">solamentecodigoshtmlbybcn.jimdofree.com/probador-de-html</a>. Collez le code dans la zone de texte et lancez la conversion : un nouvel onglet affiche l\'aperçu de la signature.',
       'Sur cet aperçu, sélectionnez tout (<b>Ctrl + A</b>) puis copiez (<b>Ctrl + C</b>).',
       'Dans Gmail : <b>⚙️ › Voir tous les paramètres › Général › Signature › Créer</b>. Nommez-la, collez dans la zone (<b>Ctrl + V</b>).',
       'Descendez en bas de page et cliquez sur <b>Enregistrer les modifications</b>.',
