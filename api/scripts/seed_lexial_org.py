@@ -57,12 +57,12 @@ def main() -> None:
             db.delete(existing)
             db.commit()
 
-        # show_chambers=False : logo Chambers masqué tant que l'image définitive n'est pas reçue (~25 juin).
+        # show_chambers=True : l'image Chambers définitive (chambers-2026.png) est en place et affichée.
         org = Organization(
             name="LEXIAL",
             slug="lexial",
             notes="Cabinet d'avocats — lexial.eu",
-            show_chambers=False,
+            show_chambers=True,
             brand_color="#d1080c",
             brand_logo_url=LEXIAL_LOGO_URL,
             default_theme="light",
