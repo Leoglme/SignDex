@@ -134,7 +134,8 @@ const pageTitle: ComputedRef<string> = computed(() =>
 const brandCss: ComputedRef<string> = computed(() =>
   info.value?.brand_color ? `:root{--ui-primary:${info.value.brand_color};}` : '',
 )
-useHead({ title: pageTitle, style: [{ id: 'reset-brand-vars', innerHTML: brandCss }] })
+const faviconHref: ComputedRef<string> = computed(() => info.value?.brand_logo_url || '/favicon.ico')
+useHead({ title: pageTitle, style: [{ id: 'reset-brand-vars', innerHTML: brandCss }], link: [{ rel: 'icon', href: faviconHref }] })
 
 /** Couleur de texte lisible (noir/blanc) selon la luminance de la couleur de marque. */
 function textOn(hex: string): string {

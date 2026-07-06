@@ -44,9 +44,20 @@ app = FastAPI(
 async def log_errors_middleware(request: Request, call_next):  # type: ignore[no-untyped-def]
     try:
         return await call_next(request)
-    except Exception:
+    except Exception as exc:
         logger.exception("Request failed: %s %s", request.method, request.url.path)
-        raise
+        # On RENVOIE la 500 ici (au lieu de re-raise) : ce middleware est à l'intérieur du
+        # CORSMiddleware, donc la réponse ressort avec les en-têtes CORS. Sinon un 500 non géré
+        # remonte au-dessus du CORS → réponse sans `Access-Control-Allow-Origin` → le navigateur
+        # affiche une erreur « CORS » opaque au lieu de la vraie erreur 500.
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={
+                "detail": str(exc) or "Internal Server Error",
+                "error": "internal_server_error",
+                "path": request.url.path,
+            },
+        )
 
 
 _origins = [o.strip() for o in settings.cors_origins.split(",") if o.strip()]

@@ -81,7 +81,7 @@ import type { FormError, FormSubmitEvent } from '@nuxt/ui'
 definePageMeta({ layout: 'auth' })
 
 const { login } = useAuth()
-const { loadHostBranding, branding, brandColor, brandLogoUrl, organizationName, brandCss, brandButtonStyle } = useHostBranding()
+const { loadHostBranding, branding, brandColor, brandLogoUrl, organizationName, faviconHref, brandCss, brandButtonStyle } = useHostBranding()
 const toast = useToast()
 const colorMode = useColorMode()
 
@@ -91,7 +91,7 @@ await loadHostBranding()
 const pageTitle: ComputedRef<string> = computed(() =>
   organizationName.value ? `Connexion — ${organizationName.value}` : 'Connexion — SignDex',
 )
-useHead({ title: pageTitle, style: [{ id: 'host-brand-vars', innerHTML: brandCss }] })
+useHead({ title: pageTitle, style: [{ id: 'host-brand-vars', innerHTML: brandCss }], link: [{ rel: 'icon', href: faviconHref }] })
 
 const state = reactive<{ email: string, password: string }>({ email: '', password: '' })
 const loading = ref(false)

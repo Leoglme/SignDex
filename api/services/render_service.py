@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import base64
 import io
+import logging
 import mimetypes
 import re
 import tempfile
+import threading
 import uuid
 import urllib.error
 import urllib.request
@@ -25,6 +27,29 @@ from models import Client
 from services.v4_shape_assets import apply_v4_corner_asset_urls
 
 _ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
+
+logger = logging.getLogger("signdex.render")
+
+# Arguments Chromium indispensables sur serveur. Sans `--disable-dev-shm-usage`, Chromium
+# utilise /dev/shm (souvent ~64 Mo sur un VPS) → crashes intermittents (« Target closed »,
+# « Page crashed ») quand on rend plusieurs signatures d'affilée. C'est la cause n°1 des 500
+# aléatoires au téléchargement. `--no-sandbox` requis en environnement restreint (systemd/root).
+_CHROMIUM_LAUNCH_ARGS = [
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    "--disable-dev-shm-usage",
+    "--disable-gpu",
+    "--disable-software-rasterizer",
+]
+
+# Sérialise les rendus : jamais deux navigateurs Chromium en parallèle (la contention mémoire
+# fait planter les rendus). Les endpoints livrable sont synchrones → exécutés dans le threadpool.
+_render_lock = threading.Lock()
+
+
+def _launch_chromium(pw):  # noqa: ANN001, ANN201 — objet Playwright interne
+    """Lance Chromium avec les arguments de stabilité serveur."""
+    return pw.chromium.launch(args=_CHROMIUM_LAUNCH_ARGS)
 
 
 def _digits(s: str) -> str:
@@ -705,7 +730,7 @@ def fake_mail_preview_to_png_bytes(
         p = Path(td) / "preview.html"
         p.write_text(doc, encoding="utf-8")
         with sync_playwright() as pw:
-            browser = pw.chromium.launch()
+            browser = _launch_chromium(pw)
             page = browser.new_page(
                 viewport={"width": viewport_width, "height": viewport_height},
                 device_scale_factor=dpr,
@@ -761,7 +786,7 @@ def html_to_png_bytes(
         p = Path(td) / "sig.html"
         p.write_text(html, encoding="utf-8")
         with sync_playwright() as pw:
-            browser = pw.chromium.launch()
+            browser = _launch_chromium(pw)
             page = browser.new_page(
                 viewport={"width": viewport_width, "height": viewport_height},
                 device_scale_factor=dpr,
@@ -824,11 +849,11 @@ def _fr_date_hint(now: datetime) -> str:
     )
 
 
-def render_org_assets(jobs: list[OrgSigJob]) -> list[tuple[bytes, bytes]]:
-    """Pour chaque job : (PNG signature, PNG aperçu « faux mail »).
+def _render_org_assets_once(jobs: list[OrgSigJob]) -> list[tuple[bytes, bytes]]:
+    """Un passage de rendu : pour chaque job (PNG signature, PNG aperçu « faux mail »).
 
-    Réutilise UN SEUL navigateur Chromium pour tous les rendus : indispensable pour générer
-    en un clic des dizaines de signatures (sinon 1 lancement de navigateur par image → minutes).
+    UN SEUL navigateur Chromium pour tous les rendus (sinon 1 lancement par image → minutes).
+    Appelé via `render_org_assets` (verrou + réessais) — ne pas appeler directement.
     """
     if not jobs:
         return []
@@ -894,4 +919,25 @@ def render_org_assets(jobs: list[OrgSigJob]) -> list[tuple[bytes, bytes]]:
         finally:
             browser.close()
     return results
+
+
+def render_org_assets(jobs: list[OrgSigJob]) -> list[tuple[bytes, bytes]]:
+    """Rendu du livrable, robuste — pour un téléchargement STABLE des signatures.
+
+    - **Sérialisé** (`_render_lock`) : jamais deux navigateurs Chromium en parallèle. La
+      contention mémoire de deux rendus simultanés est la cause n°1 des 500 intermittents.
+    - **Réessais** : Chromium peut planter ponctuellement (mémoire) → on relance un navigateur
+      NEUF jusqu'à 3 fois avant d'abandonner. Un crash transitoire ne provoque plus d'erreur.
+    """
+    if not jobs:
+        return []
+    last_err: Exception | None = None
+    with _render_lock:
+        for attempt in range(1, 4):
+            try:
+                return _render_org_assets_once(jobs)
+            except Exception as exc:  # noqa: BLE001 — on réessaie avec un navigateur neuf
+                last_err = exc
+                logger.warning("render_org_assets : tentative %d/3 échouée : %s", attempt, exc)
+    raise RuntimeError(f"Génération des signatures échouée après 3 tentatives : {last_err}") from last_err
 

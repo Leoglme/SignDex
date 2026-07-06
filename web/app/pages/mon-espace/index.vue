@@ -401,7 +401,7 @@ function stamp(): string {
 }
 
 async function runDownload(path: string, filename: string, toastId: string, waitMsg: string): Promise<void> {
-  toast.add({ id: toastId, title: 'Génération en cours…', description: waitMsg, color: 'info', icon: 'i-lucide-loader-circle', duration: 0 })
+  toast.add({ id: toastId, title: 'Génération en cours…', description: waitMsg, color: 'info', icon: 'i-lucide-loader-circle', duration: 0, ui: { icon: 'animate-spin' } })
   try {
     await downloadZip(path, filename)
     toast.remove(toastId)

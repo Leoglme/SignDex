@@ -71,7 +71,7 @@ import type { FormError, FormSubmitEvent } from '@nuxt/ui'
 definePageMeta({ layout: 'auth' })
 
 const { forgotPassword } = useAuth()
-const { loadHostBranding, branding, brandColor, brandLogoUrl, organizationName, brandCss, brandButtonStyle } = useHostBranding()
+const { loadHostBranding, branding, brandColor, brandLogoUrl, organizationName, faviconHref, brandCss, brandButtonStyle } = useHostBranding()
 const colorMode = useColorMode()
 
 // Branding déduit du sous-domaine (ex. lexial.dibodev.fr → couleurs LEXIAL).
@@ -80,7 +80,7 @@ await loadHostBranding()
 const pageTitle: ComputedRef<string> = computed(() =>
   organizationName.value ? `Mot de passe oublié — ${organizationName.value}` : 'Mot de passe oublié',
 )
-useHead({ title: pageTitle, style: [{ id: 'host-brand-vars', innerHTML: brandCss }] })
+useHead({ title: pageTitle, style: [{ id: 'host-brand-vars', innerHTML: brandCss }], link: [{ rel: 'icon', href: faviconHref }] })
 
 const state = reactive<{ email: string }>({ email: '' })
 const loading = ref(false)

@@ -56,7 +56,12 @@ const open: Ref<boolean> = ref(false)
 const brandCss: ComputedRef<string> = computed(() =>
   user.value?.brand_color ? `:root{--ui-primary:${user.value.brand_color};}` : '',
 )
-useHead({ style: [{ id: 'portal-brand-vars', innerHTML: brandCss }] })
+// Favicon = logo de l'organisation (visible dans l'onglet du navigateur).
+const faviconHref: ComputedRef<string> = computed(() => user.value?.brand_logo_url || '/favicon.ico')
+useHead({
+  style: [{ id: 'portal-brand-vars', innerHTML: brandCss }],
+  link: [{ rel: 'icon', href: faviconHref }],
+})
 
 const navItems: ComputedRef<NavigationMenuItem[]> = computed(() => [
   {

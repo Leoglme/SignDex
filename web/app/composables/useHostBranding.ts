@@ -51,6 +51,9 @@ export function useHostBranding() {
   const brandLogoUrl: ComputedRef<string | null> = computed(() => branding.value?.brand_logo_url || null)
   const organizationName: ComputedRef<string | null> = computed(() => branding.value?.organization_name || null)
 
+  /** Favicon = logo du client sur son sous-domaine, sinon le favicon SignDex par défaut. */
+  const faviconHref: ComputedRef<string> = computed(() => branding.value?.brand_logo_url || '/favicon.ico')
+
   /** `:root{--ui-primary:…}` pour teinter les accents Nuxt UI (focus, liens…) à la couleur du client. */
   const brandCss: ComputedRef<string> = computed(() =>
     brandColor.value ? `:root{--ui-primary:${brandColor.value};}` : '',
@@ -63,5 +66,5 @@ export function useHostBranding() {
       : {},
   )
 
-  return { branding, loadHostBranding, brandColor, brandLogoUrl, organizationName, brandCss, brandButtonStyle }
+  return { branding, loadHostBranding, brandColor, brandLogoUrl, organizationName, faviconHref, brandCss, brandButtonStyle }
 }
