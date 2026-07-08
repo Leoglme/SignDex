@@ -105,7 +105,7 @@ async function loadPreview() {
     }
     const res = await fetch(`${base}/services/${SERVICE_KEY}/render/preview`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify(body),
     })
     if (!res.ok) throw new Error(await res.text())
@@ -219,7 +219,7 @@ async function downloadDeliverable() {
     }))
     const res = await fetch(`${base}/services/${SERVICE_KEY}/clients/${selectedClientId.value}/deliverable`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify({ variants }),
     })
     if (!res.ok) throw new Error(await res.text())

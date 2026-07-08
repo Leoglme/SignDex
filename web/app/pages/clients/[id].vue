@@ -199,7 +199,7 @@ async function loadPreview() {
     }
     const res = await fetch(`${base}/render/preview`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify(body),
     })
     if (!res.ok) throw new Error(await res.text())
@@ -371,6 +371,7 @@ async function onUploadAsset(field: ImageField, ev: Event) {
     fd.append('file', file)
     const res = await fetch(`${base}/clients/${client.value.id}/upload?field=${field}`, {
       method: 'POST',
+      headers: { ...authHeaders() },
       body: fd,
     })
     if (!res.ok) throw new Error(await res.text())
@@ -411,7 +412,7 @@ async function downloadDeliverable() {
     }))
     const res = await fetch(`${base}/clients/${client.value.id}/deliverable`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify({ variants }),
     })
     if (!res.ok) throw new Error(await res.text())
