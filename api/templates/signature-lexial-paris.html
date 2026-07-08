@@ -18,18 +18,27 @@
   ── SPÉCIFICATION (retours client, Outlook) ──────────────────────────────────
   • Police Aptos (police par défaut de Microsoft/Outlook).
   • Nom : bleu #001958, font-weight 500. Fonction : italique gris. Coordonnées : gris, 11px, 500.
-  • Agencement : Nom → Fonction → logo LEXIAL (espacé) → adresse → Chambers → notice.
-  • Adresse : « rue | INDICATIF-CP Ville | téléphone » (BE-/F-/CH-, pas de ville en début).
+  • Agencement : Nom → Fonction → logo LEXIAL (espacé) → villes → Chambers → notice.
+  • Villes : « Paris | Brussels | Geneva », chaque ville cliquable vers la page « Offices » du site.
+    Le téléphone est optionnel (org.show_phone → phone_visible), masqué par défaut.
   • Logo LEXIAL transparent, cliquable -> lexial.eu, PAS de line-height:0 (sinon Outlook rogne).
   • Chambers ~270px (≈ largeur de l'adresse), NON cliquable. Switch org: show_chambers.
   • Notice de confidentialité : ANGLAIS uniquement. show_notice = false pour la retirer.
 #}
 
-{# ===== Bloc BUREAU — la SEULE partie qui diffère entre Paris / Genève / Bruxelles ===== #}
-{% set office_street = office.street if office is defined and office.street else '30 rue Jouffroy d’Abbans' %}
-{% set office_cp_city = office.cp_city if office is defined and office.cp_city else 'F-75017 Paris' %}
+{# ===== Bloc BUREAU ===== #}
+{# Téléphone du bureau (optionnel — affiché seulement si phone_visible). Fallback = valeur figée. #}
 {% set office_phone_display = office.phone_display if office is defined and office.phone_display else '+33 1 84 60 60 16' %}
 {% set office_phone_tel = office.phone_tel if office is defined and office.phone_tel else '+33184606016' %}
+
+{# Villes cliquables → page « Offices » (identiques aux 3 signatures). Fallback si rendu sans données. #}
+{% set offices_list = offices if offices is defined and offices else [
+  {'label': 'Paris', 'url': 'https://lexial.eu/offices/'},
+  {'label': 'Brussels', 'url': 'https://lexial.eu/offices/'},
+  {'label': 'Geneva', 'url': 'https://lexial.eu/offices/'}
+] %}
+{% set show_phone = phone_visible if phone_visible is defined else false %}
+{% set blank_template = is_blank if is_blank is defined else false %}
 
 {# ===== Réglages de marque (identiques aux 3 bureaux) ===== #}
 {% set show_chambers = chambers_visible if chambers_visible is defined else true %}
@@ -51,13 +60,17 @@
 
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; font-family:{{ font }}; font-size:11px; line-height:15px; color:{{ ink }}; width:100%; max-width:640px;">
 
-  {# ---------- Nom (bleu, semi-gras léger) ---------- #}
+  {# ---------- Nom (bleu, semi-gras léger) — ligne vide dans le modèle à compléter ---------- #}
   <tr>
-    <td style="padding:0 0 1px 0; font-family:{{ font }}; font-size:14px; line-height:18px; font-weight:500; color:{{ name_color }};">{{ display_name }}</td>
+    <td style="padding:0 0 1px 0; font-family:{{ font }}; font-size:14px; line-height:18px; font-weight:500; color:{{ name_color }};">{% if blank_template %}&nbsp;{% else %}{{ display_name }}{% endif %}</td>
   </tr>
 
-  {# ---------- Fonction (italique) ---------- #}
-  {% if role %}
+  {# ---------- Fonction (italique) — ligne vide dans le modèle à compléter ---------- #}
+  {% if blank_template %}
+  <tr>
+    <td style="padding:0 0 7px 0; font-family:{{ font }}; font-size:12px; line-height:15px; font-style:italic; color:{{ gray }};">&nbsp;</td>
+  </tr>
+  {% elif role %}
   <tr>
     <td style="padding:0 0 7px 0; font-family:{{ font }}; font-size:12px; line-height:15px; font-style:italic; color:{{ gray }};">{{ role }}</td>
   </tr>
@@ -70,9 +83,9 @@
     </td>
   </tr>
 
-  {# ---------- Coordonnées : rue | INDICATIF-CP Ville | téléphone ---------- #}
+  {# ---------- Villes des bureaux (cliquables → page Offices) + téléphone optionnel ---------- #}
   <tr>
-    <td style="padding:0 0 9px 0; font-family:{{ font }}; font-size:11px; line-height:15px; font-weight:500; color:{{ gray }};">{{ office_street }} <span style="color:{{ sep }};">|</span> {{ office_cp_city }} <span style="color:{{ sep }};">|</span> <a href="tel:{{ office_phone_tel }}" style="color:{{ gray }}; text-decoration:none; font-family:{{ font }};">{{ office_phone_display }}</a></td>
+    <td style="padding:0 0 9px 0; font-family:{{ font }}; font-size:11px; line-height:15px; font-weight:500; color:{{ gray }};">{% for o in offices_list %}{% if not loop.first %} <span style="color:{{ sep }};">|</span> {% endif %}<a href="{{ o.url }}" target="_blank" rel="noopener" style="color:{{ gray }}; text-decoration:none; font-family:{{ font }};">{{ o.label }}</a>{% endfor %}{% if show_phone and office_phone_display %} <span style="color:{{ sep }};">|</span> <a href="tel:{{ office_phone_tel }}" style="color:{{ gray }}; text-decoration:none; font-family:{{ font }};">{{ office_phone_display }}</a>{% endif %}</td>
   </tr>
 
   {# ---------- Logo Chambers (≈ largeur de l'adresse, responsive, NON cliquable) ---------- #}

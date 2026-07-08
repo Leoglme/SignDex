@@ -18,6 +18,7 @@ type OrgDetail = {
   slug: string
   notes?: string | null
   show_chambers: boolean
+  show_phone: boolean
   offices: Office[]
   members: Member[]
 }
@@ -99,6 +100,24 @@ async function setShowChambers(value: boolean) {
     })
   } catch (e: any) {
     org.value.show_chambers = prev
+    error.value = e?.message || String(e)
+  }
+}
+
+// ---------- Option : téléphone dans la signature ----------
+async function setShowPhone(value: boolean) {
+  if (!org.value) return
+  const prev = org.value.show_phone
+  org.value.show_phone = value
+  error.value = null
+  try {
+    await apiFetch(`/organizations/${org.value.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ show_phone: value }),
+    })
+  } catch (e: any) {
+    org.value.show_phone = prev
     error.value = e?.message || String(e)
   }
 }
@@ -236,7 +255,7 @@ async function generateAll() {
     const base = useApiBase()
     const res = await fetch(`${base}/organizations/${org.value.id}/deliverable`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: '{}',
     })
     await saveZipBlob(res, org.value.slug)
@@ -255,7 +274,7 @@ async function generateMember(m: Member) {
     const base = useApiBase()
     const res = await fetch(`${base}/organizations/${org.value.id}/members/${m.id}/deliverable`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: '{}',
     })
     const slug = `${org.value.slug}_${memberName(m).toLowerCase().replaceAll(' ', '-')}`
@@ -333,6 +352,26 @@ function openSavedFolder() {
               <div class="flex items-center gap-2">
                 <span class="text-muted text-xs">{{ org.show_chambers ? 'Affiché' : 'Masqué' }}</span>
                 <USwitch :model-value="org.show_chambers" @update:model-value="setShowChambers" />
+              </div>
+            </div>
+          </UCard>
+
+          <!-- ============ OPTION : TÉLÉPHONE ============ -->
+          <UCard>
+            <div class="flex flex-wrap items-center justify-between gap-4">
+              <div class="min-w-0">
+                <div class="flex items-center gap-2 font-medium">
+                  <UIcon name="i-lucide-phone" class="size-4" />
+                  Téléphone dans la signature
+                </div>
+                <p class="text-muted mt-1 text-xs leading-relaxed">
+                  Masqué par défaut (LEXIAL a retiré le téléphone au profit des villes cliquables). Activez-le
+                  pour afficher le numéro du bureau à la suite des villes, puis « Générer tout ».
+                </p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-muted text-xs">{{ org.show_phone ? 'Affiché' : 'Masqué' }}</span>
+                <USwitch :model-value="org.show_phone" @update:model-value="setShowPhone" />
               </div>
             </div>
           </UCard>

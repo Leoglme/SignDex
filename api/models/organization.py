@@ -40,6 +40,9 @@ class Organization(Base):
     # Affiche/masque le logo Chambers (2e image) dans les signatures. Off tant que le
     # logo définitif n'est pas reçu ; activer puis régénérer le livrable.
     show_chambers: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    # Affiche/masque le téléphone dans la signature. Off par défaut (LEXIAL a retiré le tél
+    # au profit des villes cliquables) ; activable côté admin ET portail client.
+    show_phone: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     # Branding du portail « Mon espace » (défini par l'admin) : logo + couleur d'accent du client.
     brand_logo_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
@@ -87,6 +90,9 @@ class OrganizationOffice(Base):
     label: Mapped[str] = mapped_column(String(255))
     template_key: Mapped[str] = mapped_column(String(128))
     sort_order: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    # Lien de la ville dans la signature (nom du bureau cliquable → page « Offices » du site).
+    # Éditable par le client. Fallback = page Offices générique du template.
+    city_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     # Adresse du bureau (éditable par le client — déménagement). Fallback = valeurs figées du template.
     address_street: Mapped[str | None] = mapped_column(String(255), nullable=True)
     address_cp_city: Mapped[str | None] = mapped_column(String(255), nullable=True)

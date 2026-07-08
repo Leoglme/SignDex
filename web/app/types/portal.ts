@@ -3,6 +3,7 @@ export interface PortalOffice {
   label: string
   template_key: string
   sort_order: number
+  city_url: string | null
   address_street: string | null
   address_cp_city: string | null
   phone_display: string | null
@@ -26,6 +27,7 @@ export interface PortalOrganization {
   sig_logo_url: string | null
   sig_chambers_url: string | null
   show_chambers: boolean
+  show_phone: boolean
   member_count: number
   signature_count: number
 }

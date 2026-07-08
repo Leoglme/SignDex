@@ -39,13 +39,31 @@
           </div>
         </section>
 
+        <!-- Options de signature -->
+        <section>
+          <h2 class="text-highlighted text-base font-semibold">Options de signature</h2>
+          <p class="text-muted mb-4 mt-1 text-sm">Réglages communs à toutes les signatures.</p>
+          <div class="flex flex-wrap items-center justify-between gap-4 rounded-2xl p-4" :class="cardClass">
+            <div class="min-w-0">
+              <p class="text-highlighted flex items-center gap-2 text-sm font-medium">
+                <UIcon name="i-lucide-phone" class="size-4 shrink-0" />Afficher le téléphone
+              </p>
+              <p class="text-muted mt-0.5 text-xs">Masqué par défaut. Activez-le pour afficher le numéro du bureau à la suite des villes.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-muted text-xs">{{ showPhone ? 'Affiché' : 'Masqué' }}</span>
+              <USwitch :model-value="showPhone" :loading="savingPhone" @update:model-value="setShowPhone" />
+            </div>
+          </div>
+        </section>
+
         <!-- Bureaux (accordéon) -->
         <section>
           <div class="mb-1 flex flex-wrap items-center justify-between gap-3">
             <h2 class="text-highlighted text-base font-semibold">Bureaux</h2>
             <UButton icon="i-lucide-plus" color="neutral" :style="brandButtonStyle" label="Ajouter un bureau" @click="openAddOffice" />
           </div>
-          <p class="text-muted mb-4 text-sm">Dépliez un bureau pour modifier son adresse (déménagement). Les signatures rattachées seront à jour au prochain téléchargement.</p>
+          <p class="text-muted mb-4 text-sm">Dépliez un bureau pour modifier le nom de la ville et le lien vers lequel elle renvoie. Les signatures rattachées seront à jour au prochain téléchargement.</p>
 
           <div v-if="loading" class="space-y-2">
             <USkeleton v-for="i in 3" :key="i" class="h-16 w-full rounded-2xl bg-neutral-200 dark:bg-neutral-800" />
@@ -65,24 +83,21 @@
                     <span class="text-highlighted flex items-center gap-2 font-medium">
                       <UIcon name="i-lucide-map-pin" class="size-4 shrink-0" :style="{ color: pinColor(d.label) }" />{{ d.label }}
                     </span>
-                    <span class="text-muted mt-0.5 block truncate text-xs">{{ [d.address_street, d.address_cp_city].filter(Boolean).join(', ') || 'Adresse à compléter' }}</span>
+                    <span class="text-muted mt-0.5 block truncate text-xs">{{ d.city_url || 'Lien de la ville à définir' }}</span>
                   </span>
                   <UIcon name="i-lucide-chevron-down" class="text-muted size-5 shrink-0 transition-transform" :class="open ? 'rotate-180' : ''" />
                 </button>
               </template>
               <template #content>
                 <div class="border-default space-y-3 border-t p-4">
-                  <UFormField label="Nom du bureau">
+                  <UFormField label="Nom de la ville" help="Texte cliquable affiché dans la signature (ex. Paris).">
                     <UInput v-model="d.label" class="w-full" />
                   </UFormField>
+                  <UFormField label="Lien de la ville" help="Page vers laquelle la ville renvoie (ex. votre page Offices).">
+                    <UInput v-model="d.city_url" placeholder="https://lexial.eu/offices/" class="w-full" />
+                  </UFormField>
                   <div class="grid gap-3 sm:grid-cols-2">
-                    <UFormField label="Rue">
-                      <UInput v-model="d.address_street" placeholder="30 rue Jouffroy d’Abbans" class="w-full" />
-                    </UFormField>
-                    <UFormField label="Code postal + ville">
-                      <UInput v-model="d.address_cp_city" placeholder="F-75017 Paris" class="w-full" />
-                    </UFormField>
-                    <UFormField label="Téléphone">
+                    <UFormField label="Téléphone" help="Affiché seulement si l'option « Téléphone » ci-dessus est activée.">
                       <UInput v-model="d.phone_display" placeholder="+33 1 84 60 60 16" class="w-full" />
                     </UFormField>
                   </div>
@@ -102,16 +117,13 @@
   <USlideover v-model:open="addOpen" title="Ajouter un bureau">
     <template #body>
       <div class="space-y-4">
-        <UFormField label="Nom du bureau">
+        <UFormField label="Nom de la ville">
           <UInput v-model="newOffice.label" placeholder="Lyon" class="w-full" />
         </UFormField>
-        <UFormField label="Rue">
-          <UInput v-model="newOffice.address_street" class="w-full" />
+        <UFormField label="Lien de la ville" help="Page vers laquelle la ville renvoie.">
+          <UInput v-model="newOffice.city_url" placeholder="https://lexial.eu/offices/" class="w-full" />
         </UFormField>
-        <UFormField label="Code postal + ville">
-          <UInput v-model="newOffice.address_cp_city" class="w-full" />
-        </UFormField>
-        <UFormField label="Téléphone">
+        <UFormField label="Téléphone" help="Affiché seulement si l'option « Téléphone » est activée.">
           <UInput v-model="newOffice.phone_display" placeholder="+33 1 84 60 60 16" class="w-full" />
         </UFormField>
       </div>
@@ -143,6 +155,7 @@ const DEFAULT_CHAMBERS = 'https://aapjpybdkzqtgxavjjem.supabase.co/storage/v1/ob
 interface OfficeDraft {
   id: number
   label: string
+  city_url: string
   address_street: string
   address_cp_city: string
   phone_display: string
@@ -169,7 +182,10 @@ const chambersInput = ref<HTMLInputElement | null>(null)
 
 const addOpen = ref(false)
 const addingOffice = ref(false)
-const newOffice = reactive({ label: '', address_street: '', address_cp_city: '', phone_display: '' })
+const newOffice = reactive({ label: '', city_url: '', address_street: '', address_cp_city: '', phone_display: '' })
+
+const showPhone = ref(false)
+const savingPhone = ref(false)
 
 const logoEffective: ComputedRef<string> = computed(() => sigLogoUrl.value || DEFAULT_LOGO)
 const chambersEffective: ComputedRef<string> = computed(() => sigChambersUrl.value || DEFAULT_CHAMBERS)
@@ -198,6 +214,7 @@ function populateFromOverview(data: PortalOverview | null): void {
   drafts.value = data.offices.map(o => ({
     id: o.id,
     label: o.label,
+    city_url: o.city_url || '',
     address_street: o.address_street || '',
     address_cp_city: o.address_cp_city || '',
     phone_display: o.phone_display || '',
@@ -205,6 +222,7 @@ function populateFromOverview(data: PortalOverview | null): void {
   openOfficeId.value = drafts.value[0]?.id ?? null
   sigLogoUrl.value = data.organization.sig_logo_url
   sigChambersUrl.value = data.organization.sig_chambers_url
+  showPhone.value = data.organization.show_phone
 }
 watch(overview, populateFromOverview, { immediate: true })
 
@@ -218,7 +236,7 @@ async function saveOffice(d: OfficeDraft): Promise<void> {
     await apiFetch(`/portal/offices/${d.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ label: d.label, address_street: d.address_street, address_cp_city: d.address_cp_city, phone_display: d.phone_display }),
+      body: JSON.stringify({ label: d.label, city_url: d.city_url, address_street: d.address_street, address_cp_city: d.address_cp_city, phone_display: d.phone_display }),
     })
     toast.add({ title: 'Bureau enregistré', color: 'success', icon: 'i-lucide-check' })
   } catch (e) {
@@ -230,10 +248,30 @@ async function saveOffice(d: OfficeDraft): Promise<void> {
 
 function openAddOffice(): void {
   newOffice.label = ''
+  newOffice.city_url = ''
   newOffice.address_street = ''
   newOffice.address_cp_city = ''
   newOffice.phone_display = ''
   addOpen.value = true
+}
+
+async function setShowPhone(value: boolean): Promise<void> {
+  const prev = showPhone.value
+  showPhone.value = value
+  savingPhone.value = true
+  try {
+    await apiFetch('/portal/settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ show_phone: value }),
+    })
+    toast.add({ title: value ? 'Téléphone affiché' : 'Téléphone masqué', color: 'success', icon: 'i-lucide-check' })
+  } catch (e) {
+    showPhone.value = prev
+    toast.add({ title: 'Modification impossible', description: (e as Error).message, color: 'error' })
+  } finally {
+    savingPhone.value = false
+  }
 }
 
 async function addOffice(): Promise<void> {

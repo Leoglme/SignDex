@@ -16,11 +16,15 @@ from sqlalchemy import select
 from core.database import SessionLocal
 from models import Client, Organization, OrganizationMember, OrganizationOffice
 
+# Page « Offices » du site : les 3 villes cliquables y renvoient (retour client 07/07).
+LEXIAL_OFFICES_URL = "https://lexial.eu/offices/"
+
+# Ordre d'affichage des villes : Paris | Brussels | Geneva (retour client).
 # (libellé bureau, template, rue, CP+ville, téléphone affiché, téléphone lien)
 OFFICES = [
     ("Paris", "signature-lexial-paris", "30 rue Jouffroy d’Abbans", "F-75017 Paris", "+33 1 84 60 60 16", "+33184606016"),
-    ("Geneva", "signature-lexial-geneva", "Chemin de la Milice", "CH-1228 Plan-les-Ouates, Geneva", "+41 22 595 59 26", "+41225955926"),
     ("Brussels", "signature-lexial-brussels", "Rue de la Loi 155/99", "BE-1040 Brussels", "+32 2 511 23 33", "+3225112333"),
+    ("Geneva", "signature-lexial-geneva", "Chemin de la Milice", "CH-1228 Plan-les-Ouates, Geneva", "+41 22 595 59 26", "+41225955926"),
 ]
 
 LEXIAL_LOGO_URL = "https://aapjpybdkzqtgxavjjem.supabase.co/storage/v1/object/public/GoupixDex/template-assets/lexial/lexial-logo-transparent.png"
@@ -58,11 +62,13 @@ def main() -> None:
             db.commit()
 
         # show_chambers=True : l'image Chambers définitive (chambers-2026.png) est en place et affichée.
+        # show_phone=False : le téléphone a été retiré de la signature (villes cliquables à la place).
         org = Organization(
             name="LEXIAL",
             slug="lexial",
             notes="Cabinet d'avocats — lexial.eu",
             show_chambers=True,
+            show_phone=False,
             brand_color="#d1080c",
             brand_logo_url=LEXIAL_LOGO_URL,
             default_theme="light",
@@ -73,6 +79,7 @@ def main() -> None:
                 label=label,
                 template_key=template_key,
                 sort_order=i,
+                city_url=LEXIAL_OFFICES_URL,
                 address_street=street,
                 address_cp_city=cp_city,
                 phone_display=phone_display,

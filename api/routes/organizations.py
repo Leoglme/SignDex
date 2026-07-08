@@ -58,6 +58,41 @@ def _member_client(m: OrganizationMember) -> Client:
     )
 
 
+# Lien par défaut des villes cliquables (page « Offices » du site) si aucun n'est défini sur le bureau.
+_DEFAULT_OFFICE_URL = "https://lexial.eu/offices/"
+
+# Signature « modèle vierge » : nom + fonction laissés VIDES (2 lignes vides que le client remplit
+# dans Outlook). Rendu via l'extra `is_blank=True` → le template garde la hauteur des lignes.
+_TEMPLATE_SENDER_LABEL = "Modèle à compléter"
+
+
+def _template_client() -> Client:
+    """Client transitoire pour la signature « modèle vierge » (nom + fonction laissés vides)."""
+    return Client(name="", firstname="", lastname="", title="")
+
+
+def _org_common_extra(org: Organization) -> dict:
+    """Variables Jinja communes à toutes les signatures de l'organisation (hors bureau courant)."""
+    return {
+        "chambers_visible": org.show_chambers,
+        "phone_visible": org.show_phone,
+        "sig_logo_url": org.sig_logo_url,
+        "sig_chambers_url": org.sig_chambers_url,
+        # Villes cliquables (mêmes sur toutes les signatures), dans l'ordre des bureaux.
+        "offices": [{"label": o.label, "url": o.city_url or _DEFAULT_OFFICE_URL} for o in org.offices],
+    }
+
+
+def _office_extra(office: OrganizationOffice) -> dict:
+    """Bloc `office` du bureau courant (téléphone optionnel + adresse historique)."""
+    return {
+        "street": office.address_street,
+        "cp_city": office.address_cp_city,
+        "phone_display": office.phone_display,
+        "phone_tel": office.phone_tel,
+    }
+
+
 def _signature_count(org: Organization) -> int:
     return sum(len(m.offices) for m in org.members)
 
@@ -106,12 +141,18 @@ def create_organization(payload: OrganizationCreate, db: Session = Depends(get_d
         slug=_safe_slug(payload.name),
         notes=payload.notes,
         show_chambers=payload.show_chambers,
+        show_phone=payload.show_phone,
         brand_logo_url=payload.brand_logo_url,
         brand_color=payload.brand_color,
     )
     for off in payload.offices:
         org.offices.append(
-            OrganizationOffice(label=off.label, template_key=off.template_key, sort_order=off.sort_order),
+            OrganizationOffice(
+                label=off.label,
+                template_key=off.template_key,
+                sort_order=off.sort_order,
+                city_url=off.city_url,
+            ),
         )
     db.add(org)
     db.commit()
@@ -135,6 +176,8 @@ def update_organization(org_id: int, payload: OrganizationUpdate, db: Session = 
         org.notes = data["notes"]
     if "show_chambers" in data and data["show_chambers"] is not None:
         org.show_chambers = data["show_chambers"]
+    if "show_phone" in data and data["show_phone"] is not None:
+        org.show_phone = data["show_phone"]
     for field in ("brand_logo_url", "brand_color", "sig_logo_url", "sig_chambers_url", "default_theme"):
         if field in data:
             setattr(org, field, data[field])
@@ -196,6 +239,7 @@ def add_office(org_id: int, payload: OfficeIn, db: Session = Depends(get_db)) ->
         label=payload.label,
         template_key=payload.template_key,
         sort_order=payload.sort_order,
+        city_url=payload.city_url,
     )
     db.add(office)
     db.commit()
@@ -292,13 +336,29 @@ def _org_readme_intro(org_name: str) -> str:
         "Les fichiers sont classés par TYPE (HTML, PNG, JPG, EXEMPLES, apple-mail) et nommés\n"
         "« prénom-nom_bureau » (ex. « emmanuel-ruchat_paris »). Chaque personne dispose d'une\n"
         "signature par bureau auquel elle est rattachée.\n"
+        "\n"
+        "Vous trouverez aussi des signatures « modele-a-completer_<bureau> » : ce sont des MODÈLES\n"
+        "VIERGES (mise en forme complète, mais nom et fonction laissés VIDES). Importez-en un dans\n"
+        "Outlook comme une signature normale, puis saisissez vos nom et fonction sur les deux lignes\n"
+        "vides du haut. Pratique pour créer une signature sans repasser par nous.\n"
     )
 
 
-def _build_deliverable_zip(org: Organization, members: list[OrganizationMember], zip_stem: str) -> Response:
-    """Construit le ZIP (HTML / apple-mail / PNG / JPG / EXEMPLES) pour les membres donnés."""
+def _build_deliverable_zip(
+    org: Organization,
+    members: list[OrganizationMember],
+    zip_stem: str,
+    *,
+    include_blank_template: bool = False,
+) -> Response:
+    """Construit le ZIP (HTML / apple-mail / PNG / JPG / EXEMPLES) pour les membres donnés.
+
+    `include_blank_template` : ajoute une signature « modèle vierge » à compléter par bureau
+    (nom + fonction en repères) — réservé au livrable COMPLET, pas aux livrables d'un seul membre.
+    """
     plan: list[tuple[str, str, str]] = []  # (member_slug, office_slug, rendered_html)
     jobs: list[OrgSigJob] = []
+    common_extra = _org_common_extra(org)
     for member in members:
         if not member.offices:
             continue
@@ -309,20 +369,23 @@ def _build_deliverable_zip(org: Organization, members: list[OrganizationMember],
             rendered = render_signature_html(
                 template_html=raw,
                 client=client,
-                extra={
-                    "chambers_visible": org.show_chambers,
-                    "sig_logo_url": org.sig_logo_url,
-                    "sig_chambers_url": org.sig_chambers_url,
-                    "office": {
-                        "street": office.address_street,
-                        "cp_city": office.address_cp_city,
-                        "phone_display": office.phone_display,
-                        "phone_tel": office.phone_tel,
-                    },
-                },
+                extra={**common_extra, "office": _office_extra(office)},
             )
             plan.append((member_slug, _safe_slug(office.label), rendered))
             jobs.append(OrgSigJob(rendered_html=rendered, sender_name=_member_full_name(member)))
+
+    # Modèle vierge à compléter (une variante par bureau) — seulement pour le livrable complet.
+    if include_blank_template:
+        template_client = _template_client()
+        for office in org.offices:
+            raw = load_template_html(office.template_key)
+            rendered = render_signature_html(
+                template_html=raw,
+                client=template_client,
+                extra={**common_extra, "office": _office_extra(office), "is_blank": True},
+            )
+            plan.append(("modele-a-completer", _safe_slug(office.label), rendered))
+            jobs.append(OrgSigJob(rendered_html=rendered, sender_name=_TEMPLATE_SENDER_LABEL))
 
     if not jobs:
         raise HTTPException(
@@ -377,7 +440,7 @@ def generate_organization_deliverable(
 ) -> Response:
     """Livrable COMPLET : toutes les signatures de tous les membres, en un seul ZIP."""
     org = _get_org_or_404(db, org_id)
-    return _build_deliverable_zip(org, list(org.members), org.slug)
+    return _build_deliverable_zip(org, list(org.members), org.slug, include_blank_template=True)
 
 
 @router.post("/{org_id}/members/{member_id}/deliverable")

@@ -24,6 +24,8 @@ from routes.organizations import (
     _build_deliverable_zip,
     _member_client,
     _member_full_name,
+    _office_extra,
+    _org_common_extra,
     _resolve_offices,
     _signature_count,
 )
@@ -37,6 +39,7 @@ from schemas.organizations import (
     PortalDeliverableOut,
     PortalOrganizationOut,
     PortalOverviewOut,
+    PortalSettingsUpdate,
     SignaturePreview,
 )
 from services.render_service import render_signature_html
@@ -83,6 +86,7 @@ def _build_overview(org: Organization) -> PortalOverviewOut:
             sig_logo_url=org.sig_logo_url,
             sig_chambers_url=org.sig_chambers_url,
             show_chambers=org.show_chambers,
+            show_phone=org.show_phone,
             member_count=len(org.members),
             signature_count=_signature_count(org),
         ),
@@ -169,7 +173,7 @@ def update_office(
     if not office or office.organization_id != org.id:
         raise HTTPException(status_code=404, detail="Bureau introuvable")
     data = payload.model_dump(exclude_unset=True)
-    for field in ("label", "address_street", "address_cp_city", "phone_display", "phone_tel", "sort_order"):
+    for field in ("label", "city_url", "address_street", "address_cp_city", "phone_display", "phone_tel", "sort_order"):
         if field in data and data[field] is not None:
             setattr(office, field, data[field])
     # Le lien tel: est toujours dérivé du téléphone affiché (un seul champ côté client).
@@ -179,6 +183,25 @@ def update_office(
     db.commit()
     db.refresh(office)
     return office
+
+
+@router.put("/settings", response_model=PortalOverviewOut)
+def update_settings(
+    payload: PortalSettingsUpdate,
+    current: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> PortalOverviewOut:
+    """Options de signature pilotables par le client (afficher/masquer le téléphone, le logo Chambers)."""
+    org = _current_org(current, db)
+    data = payload.model_dump(exclude_unset=True)
+    if "show_phone" in data and data["show_phone"] is not None:
+        org.show_phone = data["show_phone"]
+    if "show_chambers" in data and data["show_chambers"] is not None:
+        org.show_chambers = data["show_chambers"]
+    db.add(org)
+    db.commit()
+    db.refresh(org)
+    return _build_overview(org)
 
 
 @router.post("/offices", response_model=OfficeOut)
@@ -200,6 +223,7 @@ def add_office(
         label=payload.label,
         template_key=base.template_key,
         sort_order=payload.sort_order if payload.sort_order is not None else len(org.offices),
+        city_url=payload.city_url,
         address_street=payload.address_street,
         address_cp_city=payload.address_cp_city,
         phone_display=payload.phone_display,
@@ -286,7 +310,7 @@ def deliverable(
 ) -> Response:
     """Livrable complet (toutes les signatures) + enregistrement dans l'historique."""
     org = _current_org(current, db)
-    resp = _build_deliverable_zip(org, list(org.members), org.slug)
+    resp = _build_deliverable_zip(org, list(org.members), org.slug, include_blank_template=True)
     _record(db, org, current, scope="all", member=None, label="Toutes les signatures", count=_signature_count(org))
     return resp
 
@@ -316,23 +340,14 @@ def member_preview(
     org = _current_org(current, db)
     member = _member_or_404(db, org, member_id)
     client = _member_client(member)
+    common_extra = _org_common_extra(org)
     previews: list[SignaturePreview] = []
     for office in member.offices:
         raw = load_template_html(office.template_key)
         html = render_signature_html(
             template_html=raw,
             client=client,
-            extra={
-                "chambers_visible": org.show_chambers,
-                "sig_logo_url": org.sig_logo_url,
-                "sig_chambers_url": org.sig_chambers_url,
-                "office": {
-                    "street": office.address_street,
-                    "cp_city": office.address_cp_city,
-                    "phone_display": office.phone_display,
-                    "phone_tel": office.phone_tel,
-                },
-            },
+            extra={**common_extra, "office": _office_extra(office)},
         )
         previews.append(SignaturePreview(office_label=office.label, html=html))
     return MemberPreviewOut(member_name=_member_full_name(member), signatures=previews)

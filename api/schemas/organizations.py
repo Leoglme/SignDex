@@ -9,6 +9,7 @@ class OfficeIn(BaseModel):
     label: str = Field(min_length=1, max_length=255, description="Libellé du bureau (ex. Paris).")
     template_key: str = Field(min_length=1, max_length=128, description="Template à utiliser (ex. signature-lexial-paris).")
     sort_order: int = 0
+    city_url: str | None = Field(default=None, max_length=1024, description="Lien de la ville cliquable (page Offices).")
     address_street: str | None = Field(default=None, max_length=255)
     address_cp_city: str | None = Field(default=None, max_length=255)
     phone_display: str | None = Field(default=None, max_length=64)
@@ -16,9 +17,10 @@ class OfficeIn(BaseModel):
 
 
 class OfficeUpdate(BaseModel):
-    """Édition d'un bureau (déménagement) : libellé + adresse."""
+    """Édition d'un bureau : libellé (nom de ville affiché), lien de la ville, adresse, téléphone."""
 
     label: str | None = Field(default=None, min_length=1, max_length=255)
+    city_url: str | None = Field(default=None, max_length=1024)
     address_street: str | None = Field(default=None, max_length=255)
     address_cp_city: str | None = Field(default=None, max_length=255)
     phone_display: str | None = Field(default=None, max_length=64)
@@ -31,6 +33,7 @@ class OfficeOut(BaseModel):
     label: str
     template_key: str
     sort_order: int
+    city_url: str | None = None
     address_street: str | None = None
     address_cp_city: str | None = None
     phone_display: str | None = None
@@ -72,6 +75,7 @@ class OrganizationCreate(BaseModel):
     name: str = Field(min_length=1, max_length=255)
     notes: str | None = None
     show_chambers: bool = True
+    show_phone: bool = False
     brand_logo_url: str | None = Field(default=None, max_length=1024)
     brand_color: str | None = Field(default=None, max_length=32)
     offices: list[OfficeIn] = Field(default_factory=list)
@@ -81,6 +85,7 @@ class OrganizationUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=255)
     notes: str | None = None
     show_chambers: bool | None = None
+    show_phone: bool | None = None
     brand_logo_url: str | None = Field(default=None, max_length=1024)
     brand_color: str | None = Field(default=None, max_length=32)
     sig_logo_url: str | None = Field(default=None, max_length=1024)
@@ -94,6 +99,7 @@ class OrganizationOut(BaseModel):
     slug: str
     notes: str | None
     show_chambers: bool
+    show_phone: bool = False
     brand_logo_url: str | None = None
     brand_color: str | None = None
     sig_logo_url: str | None = None
@@ -116,6 +122,7 @@ class OrganizationSummary(BaseModel):
     slug: str
     notes: str | None
     show_chambers: bool
+    show_phone: bool = False
     brand_logo_url: str | None = None
     brand_color: str | None = None
     default_theme: str | None = None
@@ -134,8 +141,16 @@ class PortalOrganizationOut(BaseModel):
     sig_logo_url: str | None = None
     sig_chambers_url: str | None = None
     show_chambers: bool = True
+    show_phone: bool = False
     member_count: int
     signature_count: int
+
+
+class PortalSettingsUpdate(BaseModel):
+    """Options de signature pilotables par le client depuis « Mon espace »."""
+
+    show_phone: bool | None = None
+    show_chambers: bool | None = None
 
 
 class PortalOverviewOut(BaseModel):
